@@ -1,0 +1,335 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    font-family: 'Georgia', serif;
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply bg-lds-blue hover:bg-lds-light-blue text-white font-medium py-2 px-4 rounded-lg transition-colors duration-200;
+  }
+  
+  .btn-secondary {
+    @apply bg-gray-200 hover:bg-gray-300 text-gray-800 font-medium py-2 px-4 rounded-lg transition-colors duration-200;
+  }
+  
+  .card {
+    @apply bg-white rounded-lg shadow-md border border-gray-200;
+  }
+  
+  .input-field {
+    @apply w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-lds-light-blue focus:border-transparent;
+  }
+  
+  .label {
+    @apply block text-sm font-medium text-gray-700 mb-1;
+  }
+}
+
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  
+  .print-area, .print-area * {
+    visibility: visible;
+  }
+  
+  .print-area {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+  }
+  
+  .print\:hidden {
+    display: none !important;
+  }
+  
+  .print\:shadow-none {
+    box-shadow: none !important;
+  }
+  
+  /* Configurações específicas para impressão */
+  @page {
+    margin: 1.5cm;
+    size: A4;
+  }
+  
+  .print-area {
+    font-size: 10pt;
+    line-height: 1.4;
+    color: black;
+    background: white !important;
+  }
+  
+  /* Cabeçalho com gradiente convertido para impressão */
+  .print-area .bg-gradient-to-r {
+    background: #0f4c75 !important;
+    background-image: none !important;
+    color: white !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  
+  /* Manter cores de fundo importantes */
+  .print-area .bg-gray-50,
+  .print-area .bg-gray-100,
+  .print-area .bg-blue-50,
+  .print-area .bg-green-50,
+  .print-area .bg-yellow-50 {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  
+  /* Manter cores das badges */
+  .print-area .bg-green-100,
+  .print-area .bg-red-100,
+  .print-area .bg-blue-100,
+  .print-area .bg-orange-100 {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  
+  /* Manter bordas coloridas */
+  .print-area .border-lds-blue,
+  .print-area .border-lds-light-blue,
+  .print-area .border-l-4 {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  
+  .print-area h1 {
+    font-size: 16pt;
+    font-weight: bold;
+    margin-bottom: 8pt;
+  }
+  
+  .print-area h2 {
+    font-size: 13pt;
+    font-weight: bold;
+    margin-bottom: 6pt;
+  }
+  
+  .print-area h3 {
+    font-size: 12pt;
+    font-weight: bold;
+    margin-bottom: 4pt;
+  }
+  
+  .print-area h4 {
+    font-size: 11pt;
+    font-weight: bold;
+    margin-bottom: 3pt;
+  }
+  
+  /* Ajustar espaçamentos para impressão */
+  .print-area .space-y-8 > * + * {
+    margin-top: 16pt;
+  }
+  
+  .print-area .space-y-6 > * + * {
+    margin-top: 12pt;
+  }
+  
+  .print-area .space-y-4 > * + * {
+    margin-top: 8pt;
+  }
+  
+  .print-area .space-y-3 > * + * {
+    margin-top: 6pt;
+  }
+  
+  .print-area .space-y-2 > * + * {
+    margin-top: 4pt;
+  }
+  
+  /* Ajustar padding para impressão */
+  .print-area .p-8 {
+    padding: 12pt;
+  }
+  
+  .print-area .p-6 {
+    padding: 8pt;
+  }
+  
+  .print-area .p-4 {
+    padding: 6pt;
+  }
+  
+  .print-area .px-6 {
+    padding-left: 8pt;
+    padding-right: 8pt;
+  }
+  
+  .print-area .py-4 {
+    padding-top: 6pt;
+    padding-bottom: 6pt;
+  }
+  
+  .print-area .py-3 {
+    padding-top: 4pt;
+    padding-bottom: 4pt;
+  }
+  
+  /* Ajustar margens para impressão */
+  .print-area .mb-8 {
+    margin-bottom: 12pt;
+  }
+  
+  .print-area .mb-6 {
+    margin-bottom: 8pt;
+  }
+  
+  .print-area .mb-4 {
+    margin-bottom: 6pt;
+  }
+  
+  .print-area .mb-3 {
+    margin-bottom: 4pt;
+  }
+  
+  .print-area .mb-2 {
+    margin-bottom: 3pt;
+  }
+  
+  .print-area .mt-12 {
+    margin-top: 16pt;
+  }
+  
+  .print-area .mt-8 {
+    margin-top: 12pt;
+  }
+  
+  .print-area .mt-6 {
+    margin-top: 8pt;
+  }
+  
+  .print-area .mt-4 {
+    margin-top: 6pt;
+  }
+  
+  /* Garantir que as tabelas sejam legíveis */
+  .print-area table {
+    page-break-inside: auto;
+    border-collapse: collapse;
+    width: 100%;
+  }
+  
+  .print-area tr {
+    page-break-inside: avoid;
+    page-break-after: auto;
+  }
+  
+  .print-area th,
+  .print-area td {
+    border: 1pt solid #000;
+    padding: 4pt;
+    text-align: left;
+    vertical-align: top;
+  }
+  
+  .print-area th {
+    background-color: #f3f4f6 !important;
+    font-weight: bold;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  
+  /* Evitar quebras de página em elementos importantes */
+  .print-area .rounded-lg {
+    page-break-inside: avoid;
+    margin-bottom: 8pt;
+  }
+  
+  /* Garantir que as assinaturas fiquem na mesma página */
+  .print-area .grid.grid-cols-2.gap-16 {
+    page-break-inside: avoid;
+    margin-top: 16pt;
+  }
+  
+  /* Ajustar ícones para impressão */
+  .print-area svg {
+    width: 12pt;
+    height: 12pt;
+  }
+  
+  /* Garantir que o cabeçalho seja visível */
+  .print-area .text-white {
+    color: white !important;
+  }
+  
+  /* Ajustar badges para impressão */
+  .print-area .inline-flex {
+    display: inline-block;
+    padding: 2pt 4pt;
+    border-radius: 2pt;
+    font-size: 8pt;
+    font-weight: bold;
+  }
+  
+  /* Garantir que as bordas coloridas sejam visíveis */
+  .print-area .border-l-4 {
+    border-left-width: 3pt;
+    border-left-style: solid;
+  }
+  
+  .print-area .border-lds-blue {
+    border-color: #0f4c75 !important;
+  }
+  
+  .print-area .border-lds-light-blue {
+    border-color: #3282b8 !important;
+  }
+  
+  /* Ajustar grid para impressão */
+  .print-area .grid {
+    display: block;
+  }
+  
+  .print-area .md\:grid-cols-2 > * {
+    display: inline-block;
+    width: 48%;
+    vertical-align: top;
+    margin-right: 2%;
+  }
+  
+  .print-area .md\:grid-cols-2 > *:nth-child(2n) {
+    margin-right: 0;
+  }
+  
+  /* Garantir que o texto seja legível */
+  .print-area .text-gray-900 {
+    color: #000 !important;
+  }
+  
+  .print-area .text-gray-700 {
+    color: #333 !important;
+  }
+  
+  .print-area .text-gray-600 {
+    color: #555 !important;
+  }
+  
+  .print-area .text-gray-500 {
+    color: #777 !important;
+  }
+  
+  /* Ajustar overflow para impressão */
+  .print-area .overflow-x-auto {
+    overflow: visible;
+  }
+  
+  /* Garantir que as seções não quebrem mal */
+  .print-area .border.border-gray-200.rounded-lg {
+    page-break-inside: avoid;
+    border: 1pt solid #ccc;
+    margin-bottom: 8pt;
+  }
+}
