@@ -291,3 +291,78 @@ export const exportarDadosParaOutroNavegador = () => {
     return null;
   }
 };
+
+// Função para excluir unidade (apenas para proprietário do sistema)
+export const excluirUnidadeCompleta = (unidadeId: string): { sucesso: boolean; erro?: string } => {
+  try {
+    // Verificar se há usuários na unidade
+    const usuarioUnidades = (loadFromMultipleSources('usuario-unidades') || []) as UsuarioUnidade[];
+    const usuariosNaUnidade = usuarioUnidades.filter(uu => uu.unidadeId === unidadeId);
+    
+    // Remover todas as relações usuário-unidade
+    const novasRelacoes = usuarioUnidades.filter(uu => uu.unidadeId !== unidadeId);
+    saveToMultipleSources('usuario-unidades', novasRelacoes);
+
+    // Remover atas da unidade
+    const atas = loadFromMultipleSources('atas-sacramentais') || [];
+    const novasAtas = atas.filter((ata: any) => ata.unidadeId !== unidadeId);
+    saveToMultipleSources('atas-sacramentais', novasAtas);
+
+    // Remover hinos personalizados da unidade
+    const hinos = loadFromMultipleSources('hinos-personalizados') || [];
+    const novosHinos = hinos.filter((hino: any) => hino.unidadeId !== unidadeId);
+    saveToMultipleSources('hinos-personalizados', novosHinos);
+
+    // Remover a unidade
+    const unidades = (loadFromMultipleSources('unidades') || []) as Unidade[];
+    const novasUnidades = unidades.filter(u => u.id !== unidadeId);
+    saveToMultipleSources('unidades', novasUnidades);
+
+    return { sucesso: true };
+  } catch (error) {
+    console.error('Erro ao excluir unidade:', error);
+    return { sucesso: false, erro: 'Erro interno do sistema' };
+  }
+};
+
+// Função para excluir usuário globalmente (apenas para proprietário do sistema)
+export const excluirUsuarioGlobal = (usuarioId: string): { sucesso: boolean; erro?: string } => {
+  try {
+    // Remover todas as relações usuário-unidade
+    const usuarioUnidades = (loadFromMultipleSources('usuario-unidades') || []) as UsuarioUnidade[];
+    const novasRelacoes = usuarioUnidades.filter(uu => uu.usuarioId !== usuarioId);
+    saveToMultipleSources('usuario-unidades', novasRelacoes);
+
+    // Remover o usuário
+    const usuarios = (loadFromMultipleSources('usuarios') || []) as Usuario[];
+    const novosUsuarios = usuarios.filter(u => u.id !== usuarioId);
+    saveToMultipleSources('usuarios', novosUsuarios);
+
+    return { sucesso: true };
+  } catch (error) {
+    console.error('Erro ao excluir usuário:', error);
+    return { sucesso: false, erro: 'Erro interno do sistema' };
+  }
+};
+
+// Função para obter estatísticas detalhadas de uma unidade
+export const obterEstatisticasUnidade = (unidadeId: string) => {
+  try {
+    const usuarioUnidades = (loadFromMultipleSources('usuario-unidades') || []) as UsuarioUnidade[];
+    const atas = loadFromMultipleSources('atas-sacramentais') || [];
+    const hinos = loadFromMultipleSources('hinos-personalizados') || [];
+    
+    const usuariosNaUnidade = usuarioUnidades.filter(uu => uu.unidadeId === unidadeId).length;
+    const atasNaUnidade = atas.filter((ata: any) => ata.unidadeId === unidadeId).length;
+    const hinosNaUnidade = hinos.filter((hino: any) => hino.unidadeId === unidadeId).length;
+    
+    return {
+      usuarios: usuariosNaUnidade,
+      atas: atasNaUnidade,
+      hinos: hinosNaUnidade
+    };
+  } catch (error) {
+    console.error('Erro ao obter estatísticas da unidade:', error);
+    return { usuarios: 0, atas: 0, hinos: 0 };
+  }
+};

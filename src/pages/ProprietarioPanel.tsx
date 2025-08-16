@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Shield, Database, Users, Building, BarChart3, Settings, Download, Upload, AlertTriangle, CheckCircle, Globe, Server, Activity, Plus, Edit, Trash2, Image, UserPlus, LogOut } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { getUsuarioLogado, criarUnidade, logout } from '../utils/auth';
+import { getUsuarioLogado, criarUnidade, logout, excluirUnidadeCompleta, excluirUsuarioGlobal, obterEstatisticasUnidade } from '../utils/auth';
 import { Usuario, Unidade } from '../types';
 
 const ProprietarioPanel: React.FC = () => {
@@ -32,6 +32,8 @@ const ProprietarioPanel: React.FC = () => {
     unidadesAtivas: 0,
     espacoTotal: '0 KB'
   });
+  const [mostrarModalExclusao, setMostrarModalExclusao] = useState(false);
+  const [itemParaExcluir, setItemParaExcluir] = useState<{tipo: 'unidade' | 'usuario', id: string, nome: string} | null>(null);
 
   // Verificar se é o proprietário do sistema
   useEffect(() => {
@@ -323,6 +325,76 @@ const ProprietarioPanel: React.FC = () => {
       setErros({ geral: 'Erro ao criar usuário. Tente novamente.' });
     }
   };
+  const confirmarExclusao = (tipo: 'unidade' | 'usuario', id: string, nome: string) => {
+    setItemParaExcluir({ tipo, id, nome });
+    setMostrarModalExclusao(true);
+  };
+
+  const executarExclusao = () => {
+    if (!itemParaExcluir) return;
+
+    try {
+      if (itemParaExcluir.tipo === 'unidade') {
+        excluirUnidade(itemParaExcluir.id);
+      } else {
+        excluirUsuario(itemParaExcluir.id);
+      }
+      setMostrarModalExclusao(false);
+      setItemParaExcluir(null);
+    } catch (error) {
+      console.error('Erro ao excluir:', error);
+      alert('Erro ao excluir. Tente novamente.');
+    }
+  };
+
+  const excluirUnidade = (unidadeId: string) => {
+    const estatisticas = obterEstatisticasUnidade(unidadeId);
+    
+    if (estatisticas.usuarios > 0 || estatisticas.atas > 0 || estatisticas.hinos > 0) {
+      const mensagem = `Esta unidade possui:\n• ${estatisticas.usuarios} usuário(s)\n• ${estatisticas.atas} ata(s)\n• ${estatisticas.hinos} hino(s) personalizado(s)\n\nTodos os dados serão removidos permanentemente. Continuar?`;
+      if (!window.confirm(mensagem)) {
+        return;
+      }
+    }
+
+    const resultado = excluirUnidadeCompleta(unidadeId);
+    if (resultado.sucesso) {
+      carregarUnidades();
+      carregarEstatisticasGerais();
+      alert('Unidade e todos os dados relacionados foram removidos com sucesso.');
+    } else {
+      alert(resultado.erro || 'Erro ao excluir unidade.');
+    }
+  };
+
+  const excluirUsuario = (usuarioId: string) => {
+    const resultado = excluirUsuarioGlobal(usuarioId);
+    if (resultado.sucesso) {
+      carregarEstatisticasGerais();
+      alert('Usuário removido com sucesso de todas as unidades.');
+    } else {
+      alert(resultado.erro || 'Erro ao excluir usuário.');
+    }
+  };
+
+  const obterUsuariosGlobais = () => {
+    const usuarios = JSON.parse(localStorage.getItem('usuarios') || '[]');
+    const usuarioUnidades = JSON.parse(localStorage.getItem('usuario-unidades') || '[]');
+    
+    return usuarios.map((usuario: any) => {
+      const relacoes = usuarioUnidades.filter((uu: any) => uu.usuarioId === usuario.id);
+      const unidadesDoUsuario = relacoes.map((rel: any) => {
+        const unidade = unidades.find(u => u.id === rel.unidadeId);
+        return unidade ? `${unidade.nome} (${rel.cargo})` : 'Unidade não encontrada';
+      });
+      
+      return {
+        ...usuario,
+        unidades: unidadesDoUsuario,
+        totalUnidades: relacoes.length
+      };
+    });
+  };
 
   const handleSubmitUnidade = (e: React.FormEvent) => {
     e.preventDefault();
@@ -598,6 +670,13 @@ const ProprietarioPanel: React.FC = () => {
                         >
                           <Edit className="h-4 w-4" />
                         </button>
+                        <button
+                          onClick={() => confirmarExclusao('unidade', unidade.id, unidade.nome)}
+                          className="p-2 text-red-600 hover:bg-red-600 hover:text-white rounded-lg transition-colors"
+                          title="Excluir unidade"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
                       </div>
                     </div>
                   </div>
@@ -614,6 +693,68 @@ const ProprietarioPanel: React.FC = () => {
                 >
                   Criar Primeira Unidade
                 </button>
+              </div>
+            )}
+          </div>
+
+          {/* Usuários Globais */}
+          <div className="card p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-xl font-bold text-gray-900 flex items-center space-x-2">
+                <Users className="h-5 w-5 text-purple-600" />
+                <span>Usuários do Sistema</span>
+              </h2>
+            </div>
+            
+            {obterUsuariosGlobais().length > 0 ? (
+              <div className="space-y-4">
+                {obterUsuariosGlobais().map((usuario: any) => (
+                  <div key={usuario.id} className="bg-gray-50 p-4 rounded-lg border">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center space-x-4">
+                        {usuario.foto_usuario && (
+                          <img 
+                            src={usuario.foto_usuario} 
+                            alt="Foto do usuário" 
+                            className="h-10 w-10 rounded-full object-cover border"
+                          />
+                        )}
+                        <div>
+                          <h3 className="font-semibold text-gray-900">{usuario.nome_usuario}</h3>
+                          <div className="flex items-center space-x-4 text-sm text-gray-600 mt-1">
+                            <span>{usuario.email}</span>
+                            <span>{usuario.totalUnidades} unidade{usuario.totalUnidades !== 1 ? 's' : ''}</span>
+                          </div>
+                          {usuario.unidades.length > 0 && (
+                            <div className="mt-2">
+                              <p className="text-xs text-gray-500">
+                                Unidades: {usuario.unidades.join(', ')}
+                              </p>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                      <div className="flex items-center space-x-3">
+                        <span className="px-2 py-1 rounded text-xs font-medium bg-purple-100 text-purple-800">
+                          {usuario.totalUnidades} unidade{usuario.totalUnidades !== 1 ? 's' : ''}
+                        </span>
+                        <button
+                          onClick={() => confirmarExclusao('usuario', usuario.id, usuario.nome_usuario)}
+                          className="p-2 text-red-600 hover:bg-red-600 hover:text-white rounded-lg transition-colors"
+                          title="Excluir usuário"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-8">
+                <Users className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                <h3 className="text-lg font-medium text-gray-900 mb-2">Nenhum usuário cadastrado</h3>
+                <p className="text-gray-600">Os usuários aparecerão aqui conforme forem cadastrados.</p>
               </div>
             )}
           </div>
@@ -744,6 +885,60 @@ const ProprietarioPanel: React.FC = () => {
         </div>
       )}
 
+      {/* Modal de Confirmação de Exclusão */}
+      {mostrarModalExclusao && itemParaExcluir && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-lg max-w-md w-full">
+            <div className="p-6">
+              <div className="flex items-center space-x-3 mb-4">
+                <div className="bg-red-100 p-3 rounded-full">
+                  <AlertTriangle className="h-6 w-6 text-red-600" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-bold text-gray-900">Confirmar Exclusão</h3>
+                  <p className="text-sm text-gray-600">Esta ação não pode ser desfeita</p>
+                </div>
+              </div>
+              
+              <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
+                <p className="text-red-800">
+                  <strong>ATENÇÃO:</strong> Você está prestes a excluir {itemParaExcluir.tipo === 'unidade' ? 'a unidade' : 'o usuário'}{' '}
+                  <strong>"{itemParaExcluir.nome}"</strong>.
+                </p>
+                {itemParaExcluir.tipo === 'unidade' && (
+                  <p className="text-red-700 mt-2 text-sm">
+                    Todos os dados relacionados serão removidos: usuários, atas, hinos personalizados, etc.
+                  </p>
+                )}
+                {itemParaExcluir.tipo === 'usuario' && (
+                  <p className="text-red-700 mt-2 text-sm">
+                    O usuário será removido de todas as unidades e perderá acesso ao sistema.
+                  </p>
+                )}
+              </div>
+
+              <div className="flex justify-end space-x-3">
+                <button
+                  onClick={() => {
+                    setMostrarModalExclusao(false);
+                    setItemParaExcluir(null);
+                  }}
+                  className="btn-secondary"
+                >
+                  Cancelar
+                </button>
+                <button
+                  onClick={executarExclusao}
+                  className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg font-medium transition-colors flex items-center space-x-2"
+                >
+                  <Trash2 className="h-4 w-4" />
+                  <span>Excluir Definitivamente</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
       {/* Modal de Novo Usuário */}
       {mostrarModalUsuario && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
