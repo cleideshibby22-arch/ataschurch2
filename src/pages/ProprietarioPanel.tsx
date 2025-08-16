@@ -348,8 +348,6 @@ const ProprietarioPanel: React.FC = () => {
   };
 
   const excluirUnidade = (unidadeId: string) => {
-    const estatisticas = obterEstatisticasUnidade(unidadeId);
-    
     const resultado = excluirUnidadeCompleta(unidadeId);
     if (resultado.sucesso) {
       carregarUnidades();
