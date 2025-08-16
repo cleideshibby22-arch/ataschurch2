@@ -350,13 +350,6 @@ const ProprietarioPanel: React.FC = () => {
   const excluirUnidade = (unidadeId: string) => {
     const estatisticas = obterEstatisticasUnidade(unidadeId);
     
-    if (estatisticas.usuarios > 0 || estatisticas.atas > 0 || estatisticas.hinos > 0) {
-      const mensagem = `Esta unidade possui:\n• ${estatisticas.usuarios} usuário(s)\n• ${estatisticas.atas} ata(s)\n• ${estatisticas.hinos} hino(s) personalizado(s)\n\nTodos os dados serão removidos permanentemente. Continuar?`;
-      if (!window.confirm(mensagem)) {
-        return;
-      }
-    }
-
     const resultado = excluirUnidadeCompleta(unidadeId);
     if (resultado.sucesso) {
       carregarUnidades();
@@ -906,14 +899,44 @@ const ProprietarioPanel: React.FC = () => {
                   <strong>"{itemParaExcluir.nome}"</strong>.
                 </p>
                 {itemParaExcluir.tipo === 'unidade' && (
-                  <p className="text-red-700 mt-2 text-sm">
-                    Todos os dados relacionados serão removidos: usuários, atas, hinos personalizados, etc.
-                  </p>
+                  <>
+                    <p className="text-red-700 mt-2 text-sm">
+                      Todos os dados relacionados serão removidos: usuários, atas, hinos personalizados, etc.
+                    </p>
+                    {(() => {
+                      const stats = obterEstatisticasUnidade(itemParaExcluir.id);
+                      return (
+                        <div className="mt-3 p-3 bg-red-100 rounded border border-red-300">
+                          <p className="text-red-800 font-medium text-sm">Dados que serão removidos:</p>
+                          <ul className="text-red-700 text-xs mt-1 space-y-1">
+                            <li>• {stats.usuarios} usuário(s)</li>
+                            <li>• {stats.atas} ata(s)</li>
+                            <li>• {stats.hinos} hino(s) personalizado(s)</li>
+                          </ul>
+                        </div>
+                      );
+                    })()}
+                  </>
                 )}
                 {itemParaExcluir.tipo === 'usuario' && (
-                  <p className="text-red-700 mt-2 text-sm">
-                    O usuário será removido de todas as unidades e perderá acesso ao sistema.
-                  </p>
+                  <>
+                    <p className="text-red-700 mt-2 text-sm">
+                      O usuário será removido de todas as unidades e perderá acesso ao sistema.
+                    </p>
+                    {(() => {
+                      const usuarioCompleto = obterUsuariosGlobais().find(u => u.id === itemParaExcluir.id);
+                      return usuarioCompleto && (
+                        <div className="mt-3 p-3 bg-red-100 rounded border border-red-300">
+                          <p className="text-red-800 font-medium text-sm">Acesso que será removido:</p>
+                          <ul className="text-red-700 text-xs mt-1 space-y-1">
+                            {usuarioCompleto.unidades.map((unidade: string, index: number) => (
+                              <li key={index}>• {unidade}</li>
+                            ))}
+                          </ul>
+                        </div>
+                      );
+                    })()}
+                  </>
                 )}
               </div>
 
