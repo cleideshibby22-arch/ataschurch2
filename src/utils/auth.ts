@@ -75,15 +75,6 @@ export const saveToMultipleSources = (key: string, data: any) => {
   }
 };
 
-export const getUsuarioLogado = (): Usuario | null => {
-  try {
-    const userData = loadFromMultipleSources('usuario-logado');
-    return userData ? userData as Usuario : null;
-  } catch (error) {
-    console.error('Erro ao obter usuário logado:', error);
-    return null;
-  }
-};
 
 export const getUnidadeAtual = (): Unidade | null => {
   try {
