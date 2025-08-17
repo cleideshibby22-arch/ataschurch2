@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { LogIn, Eye, EyeOff, Mail, Lock } from 'lucide-react';
-import { Usuario } from '../types';
+import { Usuario, Unidade } from '../types';
 import { setUsuarioLogado } from '../utils/auth';
 import { AuthService } from '../services/authService';
 
@@ -153,7 +153,7 @@ const Login: React.FC = () => {
         navigate('/');
       } else {
         // Se tem múltiplas unidades, mostrar seleção
-        const unidadesFormatadas = resultado.unidades.map(uu => ({
+        const unidadesFormatadas = resultado.unidades.map((uu: any) => ({
           ...uu.unidades,
           usuario_id: resultado.usuario.id,
           nome_usuario: resultado.usuario.nome_usuario,

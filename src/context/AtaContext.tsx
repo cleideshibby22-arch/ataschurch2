@@ -6,8 +6,8 @@ import { getUsuarioLogado } from '../utils/auth';
 interface AtaContextType {
   atas: Ata[];
   carregando: boolean;
-  adicionarAta: (ata: Omit<Ata, 'id' | 'criado_em'>) => void;
-  editarAta: (id: string, ata: Omit<Ata, 'id' | 'criado_em'>) => void;
+  adicionarAta: (ata: Omit<Ata, 'id' | 'created_at'>) => void;
+  editarAta: (id: string, ata: Omit<Ata, 'id' | 'created_at'>) => void;
   obterAta: (id: string) => Ata | undefined;
   excluirAta: (id: string) => void;
   limparTodasAtas: () => void;
@@ -60,8 +60,14 @@ export const AtaProvider = function({ children }: { children: React.ReactNode })
         throw new Error('Usuário não autenticado');
       }
 
-      await AtaService.criarAta(novaAta as any, usuario.unidadeId, usuario.id);
-      await AtaService.cadastrarAta(novaAta as any);
+      const ataCompleta = {
+        ...novaAta,
+        unidade_id: usuario.unidadeId,
+        criado_por: usuario.id,
+        created_at: new Date().toISOString()
+      };
+      
+      await AtaService.cadastrarAta(ataCompleta);
       await carregarAtas(); // Recarregar atas após criar
     } catch (error) {
       console.error('Erro ao adicionar ata:', error);
@@ -69,9 +75,20 @@ export const AtaProvider = function({ children }: { children: React.ReactNode })
     }
   };
 
-  const editarAta = async (id: string, ataAtualizada: Omit<Ata, 'id' | 'criado_em'>) => {
+  const editarAta = async (id: string, ataAtualizada: Omit<Ata, 'id' | 'created_at'>) => {
     try {
-      await AtaService.atualizarAta(id, ataAtualizada as any);
+      const usuario = getUsuarioLogado();
+      
+      if (!usuario?.unidadeId) {
+        throw new Error('Usuário não autenticado');
+      }
+
+      const ataComUnidade = {
+        ...ataAtualizada,
+        unidade_id: usuario.unidadeId
+      };
+      
+      await AtaService.atualizarAta(id, ataComUnidade);
       await carregarAtas(); // Recarregar atas após editar
     } catch (error) {
       console.error('Erro ao editar ata:', error);
