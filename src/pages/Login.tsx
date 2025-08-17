@@ -96,6 +96,7 @@ const Login: React.FC = () => {
       };
 
       setUsuarioLogado(usuarioLogado);
+      localStorage.setItem('ultima-unidade-usada', unidadeId);
       navigate('/');
     } catch (error) {
       console.error('Erro ao fazer login:', error);
@@ -169,6 +170,7 @@ const Login: React.FC = () => {
         };
         
         setUsuarioLogado(usuarioLogado);
+        localStorage.setItem('ultima-unidade-usada', unidade.unidade_id);
         navigate('/');
       } else {
         // Se tem múltiplas unidades, mostrar seleção

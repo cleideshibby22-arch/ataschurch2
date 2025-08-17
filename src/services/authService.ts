@@ -84,6 +84,11 @@ export class AuthService {
       if (error instanceof Error && error.message === 'Credenciais inválidas') {
         throw error;
       }
+      // Se for erro de rede ou conexão, tentar fallback local
+      if (error instanceof Error && (error.message.includes('fetch') || error.message.includes('network'))) {
+        console.warn('Erro de conexão, tentando login local...');
+        return this.loginLocal(email, senha);
+      }
       throw new Error('Erro ao realizar login. Tente novamente.');
     }
   }

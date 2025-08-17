@@ -35,7 +35,14 @@ export const AtaProvider = function({ children }: { children: React.ReactNode })
     inicializarAuth();
   }, []);
 
+  useEffect(() => {
+    if (usuario?.unidadeId) {
+      carregarAtas();
+    }
+  }, [usuario]);
   const inicializarAuth = async () => {
+    setCarregando(true);
+    
     if (isSupabaseAvailable && supabase) {
       // Verificar sessão atual
       const { data: { session } } = await supabase.auth.getSession();
@@ -46,7 +53,8 @@ export const AtaProvider = function({ children }: { children: React.ReactNode })
         // Fallback para localStorage se não houver sessão
         const usuarioLocal = localStorage.getItem('usuario-logado');
         if (usuarioLocal) {
-          setUsuario(JSON.parse(usuarioLocal));
+          const usuarioData = JSON.parse(usuarioLocal);
+          setUsuario(usuarioData);
         }
       }
       
@@ -64,11 +72,12 @@ export const AtaProvider = function({ children }: { children: React.ReactNode })
       // Fallback para localStorage
       const usuarioLocal = localStorage.getItem('usuario-logado');
       if (usuarioLocal) {
-        setUsuario(JSON.parse(usuarioLocal));
+        const usuarioData = JSON.parse(usuarioLocal);
+        setUsuario(usuarioData);
       }
     }
     
-    await carregarAtas();
+    setCarregando(false);
   };
 
   const carregarUsuarioLogado = async (userId: string) => {
@@ -101,9 +110,19 @@ export const AtaProvider = function({ children }: { children: React.ReactNode })
         return;
       }
 
-      // Se tem apenas uma unidade, fazer login automático
-      if (usuarioUnidades && usuarioUnidades.length === 1) {
-        const relacao = usuarioUnidades[0];
+      // Se tem unidades, usar a primeira ou a última usada
+      if (usuarioUnidades && usuarioUnidades.length > 0) {
+        // Verificar se há uma unidade salva como última usada
+        const ultimaUnidadeUsada = localStorage.getItem('ultima-unidade-usada');
+        let relacao = usuarioUnidades[0]; // Default para primeira unidade
+        
+        if (ultimaUnidadeUsada) {
+          const relacaoSalva = usuarioUnidades.find(uu => uu.unidade_id === ultimaUnidadeUsada);
+          if (relacaoSalva) {
+            relacao = relacaoSalva;
+          }
+        }
+        
         const unidade = relacao.unidades;
         
         const usuarioCompleto: Usuario = {
@@ -125,6 +144,7 @@ export const AtaProvider = function({ children }: { children: React.ReactNode })
 
         setUsuario(usuarioCompleto);
         localStorage.setItem('usuario-logado', JSON.stringify(usuarioCompleto));
+        localStorage.setItem('ultima-unidade-usada', unidade.id);
       }
     } catch (error) {
       console.error('Erro ao carregar usuário:', error);
