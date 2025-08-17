@@ -41,7 +41,10 @@ export class AuthService {
       };
     } catch (error) {
       console.error('Erro no login:', error);
-      throw error;
+      if (error instanceof Error && error.message === 'Credenciais inválidas') {
+        throw error;
+      }
+      throw new Error('Erro ao realizar login. Tente novamente.');
     }
   }
 

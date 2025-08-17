@@ -128,7 +128,7 @@ const Cadastro: React.FC = () => {
       };
 
       const dadosUnidade = {
-        nome: nomeUnidadeCompleto,
+        nome: formData.nomeUnidade,
         tipo: formData.tipoUnidade,
         logo: logoUnidade
       };
