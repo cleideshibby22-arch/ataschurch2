@@ -929,6 +929,7 @@ const ProprietarioPanel: React.FC = () => {
                     </p>
                     {(() => {
                       const usuarioCompleto = obterUsuariosGlobais().find(u => u.id === itemParaExcluir.id);
+                      const usuarioCompleto = obterUsuariosGlobais().find((u: any) => u.id === itemParaExcluir.id);
                       return usuarioCompleto && (
                         <div className="mt-3 p-3 bg-red-100 rounded border border-red-300">
                           <p className="text-red-800 font-medium text-sm">Acesso que será removido:</p>
