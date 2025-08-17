@@ -151,11 +151,18 @@ const NovaAta: React.FC = () => {
       return;
     }
 
+    // Ensure date is not empty before submitting
+    const dataParaSubmissao = {
+      ...formData,
+      data: formData.data || new Date().toISOString().split('T')[0],
+      proxima_reuniao: formData.proxima_reuniao || null
+    };
+
     try {
       if (isEdicao && id) {
-        editarAta(id, formData);
+        editarAta(id, dataParaSubmissao);
       } else {
-        adicionarAta(formData);
+        adicionarAta(dataParaSubmissao);
       }
 
       navigate('/atas');
