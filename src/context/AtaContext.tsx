@@ -61,6 +61,7 @@ export const AtaProvider = function({ children }: { children: React.ReactNode })
       }
 
       await AtaService.criarAta(novaAta as any, usuario.unidadeId, usuario.id);
+      await AtaService.cadastrarAta(novaAta as any);
       await carregarAtas(); // Recarregar atas após criar
     } catch (error) {
       console.error('Erro ao adicionar ata:', error);
@@ -84,7 +85,7 @@ export const AtaProvider = function({ children }: { children: React.ReactNode })
 
   const excluirAta = async (id: string) => {
     try {
-      await AtaService.excluirAta(id);
+      await AtaService.removerAta(id);
       await carregarAtas(); // Recarregar atas após excluir
     } catch (error) {
       console.error('Erro ao excluir ata:', error);
