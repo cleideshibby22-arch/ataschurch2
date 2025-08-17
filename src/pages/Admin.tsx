@@ -187,7 +187,7 @@ const Admin: React.FC = () => {
             <h3 className="font-semibold text-gray-900 mb-2">Última Ata</h3>
             <p className="text-gray-600">
               {atas.length > 0 
-                ? new Date(atas[0].criado_em).toLocaleDateString('pt-BR')
+                ? new Date(atas[0].created_at).toLocaleDateString('pt-BR')
                 : 'Nenhuma ata criada'
               }
             </p>

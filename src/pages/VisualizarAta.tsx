@@ -604,7 +604,7 @@ const VisualizarAta: React.FC = () => {
 
           {/* Rodapé */}
           <div className="text-center text-sm text-gray-500 pt-8 border-t border-gray-200">
-            <p>Ata registrada em {format(new Date(ata.criado_em), 'dd/MM/yyyy HH:mm', { locale: ptBR })}</p>
+            <p>Ata registrada em {format(new Date(ata.created_at), 'dd/MM/yyyy HH:mm', { locale: ptBR })}</p>
           </div>
         </div>
       </div>

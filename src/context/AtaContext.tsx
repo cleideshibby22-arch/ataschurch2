@@ -52,7 +52,7 @@ export const AtaProvider = function({ children }: { children: React.ReactNode })
     }
   };
 
-  const adicionarAta = async (novaAta: Omit<Ata, 'id' | 'criado_em'>) => {
+  const adicionarAta = async (novaAta: Omit<Ata, 'id' | 'created_at'>) => {
     try {
       const usuario = getUsuarioLogado();
       

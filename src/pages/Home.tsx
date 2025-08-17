@@ -87,7 +87,7 @@ const Home: React.FC = () => {
           </div>
           <div className="bg-gray-50 p-4 rounded-lg">
             <div className="text-2xl font-bold text-lds-blue">
-              {atas.length > 0 ? format(new Date(atas[0].data), 'dd/MM', { locale: ptBR }) : '--'}
+              {atas.length > 0 ? format(new Date(atas[0].created_at), 'dd/MM', { locale: ptBR }) : '--'}
             </div>
             <div className="text-sm text-gray-600">Última Ata</div>
           </div>

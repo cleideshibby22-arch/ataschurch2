@@ -113,7 +113,7 @@ export interface Ata {
   observacoes: string;
   mensagem_pensamento?: string; // Apenas para reuniões que não são sacramentais
   
-  criado_em: string;
+  created_at: string;
   criado_por: string; // ID do usuário que criou
 }
 
