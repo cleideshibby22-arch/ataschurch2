@@ -33,25 +33,6 @@ export interface Unidade {
   proprietarioId: string;
 }
 
-export interface UnidadeComDetalhesUsuario extends Unidade {
-  usuario_id: string;
-  nome_usuario: string;
-  data_cadastro: string;
-  telefone?: string;
-  foto_usuario?: string;
-  cargo: string;
-  tipo: 'proprietario' | 'administrador' | 'usuario';
-  permissoes: {
-    criarAta: boolean;
-    editarAta: boolean;
-    excluirAta: boolean;
-    gerenciarUsuarios: boolean;
-    gerenciarSistema: boolean;
-    verTodasAtas: boolean;
-    verAtasPorChamado: boolean;
-  };
-}
-
 export interface UsuarioUnidade {
   usuarioId: string;
   unidadeId: string;
@@ -71,6 +52,7 @@ export interface UsuarioUnidade {
 
 export interface Ata {
   id: string;
+  unidade_id: string;
   tipo: TipoReuniao;
   data: string;
   estaca: string;
@@ -133,7 +115,7 @@ export interface Ata {
   mensagem_pensamento?: string; // Apenas para reuniões que não são sacramentais
   
   created_at: string;
-  criado_por: string; // ID do usuário que criou
+  criado_por: string;
 }
 
 export type TipoReuniao = 

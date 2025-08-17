@@ -6,8 +6,8 @@ import { getUsuarioLogado } from '../utils/auth';
 interface AtaContextType {
   atas: Ata[];
   carregando: boolean;
-  adicionarAta: (ata: Omit<Ata, 'id' | 'created_at'>) => void;
-  editarAta: (id: string, ata: Omit<Ata, 'id' | 'created_at'>) => void;
+  adicionarAta: (ata: Omit<Ata, 'id' | 'created_at' | 'unidade_id' | 'criado_por'>) => void;
+  editarAta: (id: string, ata: Omit<Ata, 'id' | 'created_at' | 'unidade_id' | 'criado_por'>) => void;
   obterAta: (id: string) => Ata | undefined;
   excluirAta: (id: string) => void;
   limparTodasAtas: () => void;
@@ -52,7 +52,7 @@ export const AtaProvider = function({ children }: { children: React.ReactNode })
     }
   };
 
-  const adicionarAta = async (novaAta: Omit<Ata, 'id' | 'created_at'>) => {
+  const adicionarAta = async (novaAta: Omit<Ata, 'id' | 'created_at' | 'unidade_id' | 'criado_por'>) => {
     try {
       const usuario = getUsuarioLogado();
       
@@ -75,7 +75,7 @@ export const AtaProvider = function({ children }: { children: React.ReactNode })
     }
   };
 
-  const editarAta = async (id: string, ataAtualizada: Omit<Ata, 'id' | 'created_at'>) => {
+  const editarAta = async (id: string, ataAtualizada: Omit<Ata, 'id' | 'created_at' | 'unidade_id' | 'criado_por'>) => {
     try {
       const usuario = getUsuarioLogado();
       
@@ -85,7 +85,8 @@ export const AtaProvider = function({ children }: { children: React.ReactNode })
 
       const ataComUnidade = {
         ...ataAtualizada,
-        unidade_id: usuario.unidadeId
+        unidade_id: usuario.unidadeId,
+        criado_por: usuario.id
       };
       
       await AtaService.atualizarAta(id, ataComUnidade);

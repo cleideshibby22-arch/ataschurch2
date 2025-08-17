@@ -42,11 +42,14 @@ export class AtaService {
   /**
    * Cadastra uma nova ata no Supabase.
    */
-  static async cadastrarAta(novaAta: Omit<Ata, 'id'>): Promise<Ata> {
+  static async cadastrarAta(novaAta: Omit<Ata, 'id' | 'created_at'>): Promise<Ata> {
     try {
       const { data, error } = await supabase
         .from('atas')
-        .insert([novaAta])
+        .insert([{
+          ...novaAta,
+          created_at: new Date().toISOString()
+        }])
         .select()
         .single();
 
@@ -61,12 +64,13 @@ export class AtaService {
       // Gera um ID temporário para localStorage
       const ataComId = {
         ...novaAta,
+        created_at: new Date().toISOString(),
         id: `temp_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
       } as Ata;
       
-      const atasExistentes = this.buscarAtasLocal(novaAta.unidade_id);
+      const atasExistentes = this.buscarAtasLocal(novaAta.unidade_id!);
       atasExistentes.unshift(ataComId);
-      this.salvarAtasLocal(novaAta.unidade_id, atasExistentes);
+      this.salvarAtasLocal(novaAta.unidade_id!, atasExistentes);
       
       return ataComId;
     }

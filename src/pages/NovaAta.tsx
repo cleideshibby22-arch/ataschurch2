@@ -152,15 +152,10 @@ const NovaAta: React.FC = () => {
     }
 
     try {
-      const dadosAta = {
-        ...formData,
-        criado_por: usuario?.id || 'unknown'
-      };
-
       if (isEdicao && id) {
-        editarAta(id, dadosAta);
+        editarAta(id, formData);
       } else {
-        adicionarAta(dadosAta);
+        adicionarAta(formData);
       }
 
       navigate('/atas');

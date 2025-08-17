@@ -1,9 +1,28 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { LogIn, Eye, EyeOff, Mail, Lock } from 'lucide-react';
-import { Usuario, Unidade, UnidadeComDetalhesUsuario } from '../types';
+import { Usuario, Unidade } from '../types';
 import { setUsuarioLogado } from '../utils/auth';
 import { AuthService } from '../services/authService';
+
+interface UnidadeComDetalhesUsuario extends Unidade {
+  usuario_id: string;
+  nome_usuario: string;
+  data_cadastro: string;
+  telefone?: string;
+  foto_usuario?: string;
+  cargo: string;
+  tipo: 'proprietario' | 'administrador' | 'usuario';
+  permissoes: {
+    criarAta: boolean;
+    editarAta: boolean;
+    excluirAta: boolean;
+    gerenciarUsuarios: boolean;
+    gerenciarSistema: boolean;
+    verTodasAtas: boolean;
+    verAtasPorChamado: boolean;
+  };
+}
 
 const Login: React.FC = () => {
   const navigate = useNavigate();
@@ -11,7 +30,7 @@ const Login: React.FC = () => {
     email: '',
     senha: ''
   });
-  const [unidadesDisponiveis, setUnidadesDisponiveis] = useState<Unidade[]>([]);
+  const [unidadesDisponiveis, setUnidadesDisponiveis] = useState<UnidadeComDetalhesUsuario[]>([]);
   const [unidadeSelecionada, setUnidadeSelecionada] = useState<string>('');
   const [mostrarSelecaoUnidade, setMostrarSelecaoUnidade] = useState(false);
   const [mostrarSenha, setMostrarSenha] = useState(false);
