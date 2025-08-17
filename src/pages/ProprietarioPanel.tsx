@@ -264,7 +264,9 @@ const ProprietarioPanel: React.FC = () => {
             editarAta: false,
             excluirAta: false,
             gerenciarUsuarios: false,
-            gerenciarSistema: false
+            gerenciarSistema: false,
+            verTodasAtas: false,
+            verAtasPorChamado: true
           }
         };
         
@@ -291,7 +293,9 @@ const ProprietarioPanel: React.FC = () => {
             editarAta: false,
             excluirAta: false,
             gerenciarUsuarios: false,
-            gerenciarSistema: false
+            gerenciarSistema: false,
+            verTodasAtas: false,
+            verAtasPorChamado: true
           }
         };
 
@@ -309,7 +313,9 @@ const ProprietarioPanel: React.FC = () => {
             editarAta: false,
             excluirAta: false,
             gerenciarUsuarios: false,
-            gerenciarSistema: false
+            gerenciarSistema: false,
+            verTodasAtas: false,
+            verAtasPorChamado: true
           }
         };
         
