@@ -2,6 +2,16 @@ import { Usuario, Unidade, UsuarioUnidade } from '../types';
 import { AuthService } from '../services/authService';
 import { supabase, isSupabaseAvailable } from '../lib/supabase';
 
+export const getUsuarioLogado = (): Usuario | null => {
+  try {
+    const userData = loadFromMultipleSources('usuario-logado');
+    return userData ? userData as Usuario : null;
+  } catch (error) {
+    console.error('Erro ao obter usuário logado:', error);
+    return null;
+  }
+};
+
 // Função para sincronizar dados com servidor simulado
 const syncWithServer = async (data: any, action: 'save' | 'load') => {
   try {

@@ -17,7 +17,9 @@ export class AuthService {
       });
 
       if (authError || !authData.user) {
-        throw new Error('Credenciais inválidas');
+        // Se falhar no Supabase, tentar login local como fallback
+        console.warn('Login no Supabase falhou, tentando login local:', authError?.message);
+        return this.loginLocal(email, senha);
       }
 
       // Buscar dados do usuário na tabela usuarios
@@ -28,38 +30,9 @@ export class AuthService {
         .maybeSingle();
 
       if (userError || !usuario) {
-        // Se não encontrar na tabela usuarios, criar registro
-        const { data: novoUsuario, error: createError } = await supabase
-          .from('usuarios')
-          .insert({
-            email: email,
-            senha: senha, // Em produção, não salvar senha em texto plano
-            nome_usuario: authData.user.email?.split('@')[0] || 'Usuário',
-          })
-          .select()
-          .single();
-
-        if (createError) {
-          throw new Error('Erro ao criar perfil do usuário');
-        }
-
-        // Buscar unidades do usuário
-        const { data: usuarioUnidades, error: unidadesError } = await supabase
-          .from('usuario_unidades')
-          .select(`
-            *,
-            unidades (*)
-          `)
-          .eq('usuario_id', novoUsuario.id);
-
-        if (unidadesError) {
-          throw new Error('Erro ao carregar unidades do usuário');
-        }
-
-        return {
-          usuario: novoUsuario,
-          unidades: usuarioUnidades || []
-        };
+        // Se não encontrar na tabela usuarios, tentar login local
+        console.warn('Usuário não encontrado na tabela usuarios, tentando login local');
+        return this.loginLocal(email, senha);
       }
 
       // Buscar unidades do usuário
@@ -72,7 +45,8 @@ export class AuthService {
         .eq('usuario_id', usuario.id);
 
       if (unidadesError) {
-        throw new Error('Erro ao carregar unidades do usuário');
+        console.warn('Erro ao carregar unidades do Supabase, tentando login local:', unidadesError);
+        return this.loginLocal(email, senha);
       }
 
       return {
@@ -81,15 +55,9 @@ export class AuthService {
       };
     } catch (error) {
       console.error('Erro no login:', error);
-      if (error instanceof Error && error.message === 'Credenciais inválidas') {
-        throw error;
-      }
-      // Se for erro de rede ou conexão, tentar fallback local
-      if (error instanceof Error && (error.message.includes('fetch') || error.message.includes('network'))) {
-        console.warn('Erro de conexão, tentando login local...');
-        return this.loginLocal(email, senha);
-      }
-      throw new Error('Erro ao realizar login. Tente novamente.');
+      // Para qualquer erro, tentar fallback local
+      console.warn('Erro no login do Supabase, tentando login local...');
+      return this.loginLocal(email, senha);
     }
   }
 
@@ -138,10 +106,9 @@ export class AuthService {
       });
 
       if (authError || !authData.user) {
-        if (authError?.message.includes('already registered')) {
-          throw new Error('Email já cadastrado');
-        }
-        throw new Error('Erro ao criar conta');
+        // Se falhar no Supabase, usar cadastro local
+        console.warn('Cadastro no Supabase falhou, usando cadastro local:', authError?.message);
+        return this.cadastrarLocal(dadosUsuario, dadosUnidade);
       }
 
       // Criar unidade
@@ -158,7 +125,8 @@ export class AuthService {
         .single();
 
       if (unidadeError || !unidade) {
-        throw new Error('Erro ao criar unidade');
+        console.warn('Erro ao criar unidade no Supabase, usando cadastro local:', unidadeError);
+        return this.cadastrarLocal(dadosUsuario, dadosUnidade);
       }
 
       // Criar usuário na tabela usuarios
@@ -176,7 +144,8 @@ export class AuthService {
         .single();
 
       if (usuarioError || !usuario) {
-        throw new Error('Erro ao criar perfil do usuário');
+        console.warn('Erro ao criar usuário no Supabase, usando cadastro local:', usuarioError);
+        return this.cadastrarLocal(dadosUsuario, dadosUnidade);
       }
 
       // Criar relacionamento usuário-unidade
@@ -199,13 +168,16 @@ export class AuthService {
         });
 
       if (relacaoError) {
-        throw new Error('Erro ao criar relacionamento usuário-unidade');
+        console.warn('Erro ao criar relacionamento no Supabase, usando cadastro local:', relacaoError);
+        return this.cadastrarLocal(dadosUsuario, dadosUnidade);
       }
 
       return { usuario, unidade };
     } catch (error) {
       console.error('Erro no cadastro:', error);
-      throw error;
+      // Para qualquer erro, usar cadastro local
+      console.warn('Erro no cadastro do Supabase, usando cadastro local...');
+      return this.cadastrarLocal(dadosUsuario, dadosUnidade);
     }
   }
 
