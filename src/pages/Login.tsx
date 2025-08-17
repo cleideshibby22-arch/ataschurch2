@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { LogIn, Eye, EyeOff, Mail, Lock } from 'lucide-react';
-import { Usuario, UnidadeComDetalhesUsuario } from '../types';
+import { Usuario, Unidade, UnidadeComDetalhesUsuario } from '../types';
 import { setUsuarioLogado } from '../utils/auth';
 import { AuthService } from '../services/authService';
 

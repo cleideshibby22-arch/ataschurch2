@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Shield, Database, Users, Building, BarChart3, Settings, Download, Upload, AlertTriangle, CheckCircle, Globe, Server, Activity, Plus, Edit, Trash2, Image, UserPlus, LogOut } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { Unidade, Usuario } from '../types';
 import { getUsuarioLogado, criarUnidade, logout, excluirUnidadeCompleta, excluirUsuarioGlobal, obterEstatisticasUnidade } from '../utils/auth';
 
 const ProprietarioPanel: React.FC = () => {
