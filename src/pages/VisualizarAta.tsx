@@ -5,13 +5,12 @@ import { useAta } from '../context/AtaContext';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { TIPOS_REUNIAO } from '../types';
-import { getUsuarioLogado, temPermissao } from '../utils/auth';
+import { temPermissao } from '../utils/auth';
 
 const VisualizarAta: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { obterAta } = useAta();
-  const usuario = getUsuarioLogado();
+  const { obterAta, usuario } = useAta();
 
   const ata = id ? obterAta(id) : undefined;
 

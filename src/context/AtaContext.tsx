@@ -1,12 +1,13 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { Ata } from '../types';
 import { AtaService } from '../services/ataService';
-import { getUsuarioLogado } from '../utils/auth';
 import { supabase, isSupabaseAvailable } from '../lib/supabase';
+import { Usuario } from '../types';
 
 interface AtaContextType {
   atas: Ata[];
   carregando: boolean;
+  usuario: Usuario | null;
   adicionarAta: (ata: Omit<Ata, 'id' | 'created_at' | 'unidade_id' | 'criado_por'>) => void;
   editarAta: (id: string, ata: Omit<Ata, 'id' | 'created_at' | 'unidade_id' | 'criado_por'>) => void;
   obterAta: (id: string) => Ata | undefined;
@@ -28,29 +29,110 @@ export const useAta = function() {
 export const AtaProvider = function({ children }: { children: React.ReactNode }) {
   const [atas, setAtas] = useState<Ata[]>([]);
   const [carregando, setCarregando] = useState(true);
+  const [usuario, setUsuario] = useState<Usuario | null>(null);
 
   useEffect(() => {
-    // Verificar sessão do Supabase ao inicializar
-    if (isSupabaseAvailable && supabase) {
-      supabase.auth.onAuthStateChange(async (event, session) => {
-        if (event === 'SIGNED_OUT') {
-          setAtas([]);
-          localStorage.removeItem('usuario-logado');
-          sessionStorage.removeItem('usuario-logado');
-        } else if (event === 'SIGNED_IN' && session) {
-          // Recarregar atas quando usuário fizer login
-          await carregarAtas();
-        }
-      });
-    }
-    
-    carregarAtas();
+    inicializarAuth();
   }, []);
 
+  const inicializarAuth = async () => {
+    if (isSupabaseAvailable && supabase) {
+      // Verificar sessão atual
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (session?.user) {
+        await carregarUsuarioLogado(session.user.id);
+      } else {
+        // Fallback para localStorage se não houver sessão
+        const usuarioLocal = localStorage.getItem('usuario-logado');
+        if (usuarioLocal) {
+          setUsuario(JSON.parse(usuarioLocal));
+        }
+      }
+      
+      // Escutar mudanças de autenticação
+      supabase.auth.onAuthStateChange(async (event, session) => {
+        if (event === 'SIGNED_OUT') {
+          setUsuario(null);
+          setAtas([]);
+          localStorage.removeItem('usuario-logado');
+        } else if (event === 'SIGNED_IN' && session?.user) {
+          await carregarUsuarioLogado(session.user.id);
+        }
+      });
+    } else {
+      // Fallback para localStorage
+      const usuarioLocal = localStorage.getItem('usuario-logado');
+      if (usuarioLocal) {
+        setUsuario(JSON.parse(usuarioLocal));
+      }
+    }
+    
+    await carregarAtas();
+  };
+
+  const carregarUsuarioLogado = async (userId: string) => {
+    try {
+      if (!isSupabaseAvailable || !supabase) return;
+
+      // Buscar dados do usuário
+      const { data: usuarioData, error: usuarioError } = await supabase
+        .from('usuarios')
+        .select('*')
+        .eq('id', userId)
+        .single();
+
+      if (usuarioError || !usuarioData) {
+        console.error('Erro ao buscar dados do usuário:', usuarioError);
+        return;
+      }
+
+      // Buscar unidades do usuário
+      const { data: usuarioUnidades, error: unidadesError } = await supabase
+        .from('usuario_unidades')
+        .select(`
+          *,
+          unidades (*)
+        `)
+        .eq('usuario_id', userId);
+
+      if (unidadesError) {
+        console.error('Erro ao buscar unidades:', unidadesError);
+        return;
+      }
+
+      // Se tem apenas uma unidade, fazer login automático
+      if (usuarioUnidades && usuarioUnidades.length === 1) {
+        const relacao = usuarioUnidades[0];
+        const unidade = relacao.unidades;
+        
+        const usuarioCompleto: Usuario = {
+          id: usuarioData.id,
+          senha: '', // Não armazenar senha
+          unidadeId: unidade.id,
+          tipoUnidade: unidade.tipo,
+          nomeUnidade: unidade.nome,
+          logoUnidade: unidade.logo || '',
+          nomeUsuario: usuarioData.nome_usuario,
+          email: usuarioData.email,
+          cargo: relacao.cargo,
+          telefone: usuarioData.telefone || '',
+          fotoUsuario: usuarioData.foto_usuario || '',
+          dataCadastro: usuarioData.data_cadastro,
+          tipo: relacao.tipo,
+          permissoes: relacao.permissoes
+        };
+
+        setUsuario(usuarioCompleto);
+        localStorage.setItem('usuario-logado', JSON.stringify(usuarioCompleto));
+      }
+    } catch (error) {
+      console.error('Erro ao carregar usuário:', error);
+    }
+  };
   const carregarAtas = async () => {
     try {
       setCarregando(true);
-      const usuario = getUsuarioLogado();
       
       if (!usuario?.unidadeId) {
         setAtas([]);
@@ -69,8 +151,6 @@ export const AtaProvider = function({ children }: { children: React.ReactNode })
 
   const adicionarAta = async (novaAta: Omit<Ata, 'id' | 'created_at' | 'unidade_id' | 'criado_por'>) => {
     try {
-      const usuario = getUsuarioLogado();
-      
       if (!usuario?.unidadeId || !usuario?.id) {
         throw new Error('Usuário não autenticado');
       }
@@ -92,8 +172,6 @@ export const AtaProvider = function({ children }: { children: React.ReactNode })
 
   const editarAta = async (id: string, ataAtualizada: Omit<Ata, 'id' | 'created_at' | 'unidade_id' | 'criado_por'>) => {
     try {
-      const usuario = getUsuarioLogado();
-      
       if (!usuario?.unidadeId) {
         throw new Error('Usuário não autenticado');
       }
@@ -140,6 +218,7 @@ export const AtaProvider = function({ children }: { children: React.ReactNode })
     <AtaContext.Provider value={{ 
       atas, 
       carregando, 
+      usuario,
       adicionarAta, 
       editarAta, 
       obterAta, 

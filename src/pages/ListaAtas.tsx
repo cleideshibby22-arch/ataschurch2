@@ -5,11 +5,10 @@ import { useAta } from '../context/AtaContext';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { TIPOS_REUNIAO, TipoReuniao } from '../types';
-import { getUsuarioLogado, temPermissao } from '../utils/auth';
+import { temPermissao } from '../utils/auth';
 
 const ListaAtas: React.FC = () => {
-  const { atas, excluirAta, carregando } = useAta();
-  const usuario = getUsuarioLogado();
+  const { atas, excluirAta, carregando, usuario } = useAta();
   const [busca, setBusca] = useState('');
   const [alaFiltro, setAlaFiltro] = useState('');
   const [tipoFiltro, setTipoFiltro] = useState<TipoReuniao | ''>('');

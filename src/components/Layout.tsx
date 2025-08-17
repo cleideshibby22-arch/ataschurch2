@@ -1,7 +1,8 @@
 import React from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { FileText, Home, Plus, List, LogOut, User, Users, Settings, Shield } from 'lucide-react';
-import { getUsuarioLogado, getUnidadeAtual, logout, isAdministrador, temPermissao, podeGerenciarUsuarios } from '../utils/auth';
+import { getUnidadeAtual, logout, isAdministrador, temPermissao, podeGerenciarUsuarios } from '../utils/auth';
+import { useAta } from '../context/AtaContext';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -10,8 +11,8 @@ interface LayoutProps {
 const Layout: React.FC<LayoutProps> = ({ children }) => {
   const location = useLocation();
   const navigate = useNavigate();
+  const { usuario } = useAta();
 
-  const usuario = getUsuarioLogado();
   const unidadeAtual = getUnidadeAtual();
   
   // Verificar se o usuário está logado

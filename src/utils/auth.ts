@@ -65,25 +65,6 @@ export const saveToMultipleSources = (key: string, data: any) => {
   }
 };
 
-export const getUsuarioLogado = (): Usuario | null => {
-  try {
-    // Primeiro verificar se há sessão ativa no Supabase
-    if (isSupabaseAvailable && supabase) {
-      // Esta função será chamada de forma síncrona, mas em um app real
-      // você usaria um hook ou context para gerenciar o estado da sessão
-      const usuarioString = localStorage.getItem('usuario-logado');
-      if (!usuarioString) return null;
-      return JSON.parse(usuarioString);
-    } else {
-      const usuarioString = localStorage.getItem('usuario-logado');
-      if (!usuarioString) return null;
-      return JSON.parse(usuarioString);
-    }
-  } catch (error) {
-    console.error('Erro ao obter usuário logado:', error);
-    return null;
-  }
-};
 
 export const getUnidadeAtual = (): Unidade | null => {
   try {

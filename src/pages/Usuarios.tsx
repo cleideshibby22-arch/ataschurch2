@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Users, UserPlus, Edit, Trash2, Mail, Phone, User, Building, Shield, Settings } from 'lucide-react';
-import { getUsuarioLogado } from '../utils/auth';
 import { AuthService } from '../services/authService';
 import { CHAMADOS_DISPONIVEIS, Chamado } from '../types';
+import { useAta } from '../context/AtaContext';
 
 interface UsuarioUnidade {
   id: string;
@@ -31,7 +31,7 @@ interface UsuarioUnidade {
 }
 
 const Usuarios: React.FC = () => {
-  const usuario = getUsuarioLogado();
+  const { usuario } = useAta();
   const [usuariosUnidade, setUsuariosUnidade] = useState<UsuarioUnidade[]>([]);
   const [mostrarModal, setMostrarModal] = useState(false);
   const [mostrarModalPermissoes, setMostrarModalPermissoes] = useState(false);

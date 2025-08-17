@@ -3,14 +3,12 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { Save, ArrowLeft, Plus, Trash2, Users, FileText, Calendar, Clock, MapPin } from 'lucide-react';
 import { useAta } from '../context/AtaContext';
 import { FormData, TipoReuniao, TIPOS_REUNIAO, CARGOS_POR_TIPO } from '../types';
-import { getUsuarioLogado } from '../utils/auth';
 import SeletorHino from '../components/SeletorHino';
 
 const NovaAta: React.FC = () => {
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
-  const { adicionarAta, editarAta, obterAta } = useAta();
-  const usuario = getUsuarioLogado();
+  const { adicionarAta, editarAta, obterAta, usuario } = useAta();
   const isEdicao = Boolean(id);
 
   const [formData, setFormData] = useState<FormData>({
