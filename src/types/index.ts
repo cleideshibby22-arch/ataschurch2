@@ -11,7 +11,7 @@ export interface Usuario {
   tipoUnidade: string;
   logoUnidade?: string;
   dataCadastro: string;
-  tipo: 'administrador' | 'usuario';
+  tipo: 'administrador' | 'usuario' | 'proprietario';
   permissoes: {
     criarAta: boolean;
     editarAta: boolean;
