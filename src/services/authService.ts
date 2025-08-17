@@ -2,7 +2,7 @@ import { supabase, isSupabaseAvailable } from '../lib/supabase';
 import { Usuario, Unidade } from '../types';
 
 export class AuthService {
-  // Fazer login
+  // Fazer login usando Supabase Auth
   static async login(email: string, senha: string) {
     // Se Supabase não estiver disponível, usar sistema local
     if (!isSupabaseAvailable || !supabase) {
@@ -10,16 +10,56 @@ export class AuthService {
     }
 
     try {
-      // Buscar usuário no banco
+      // Fazer login com Supabase Auth
+      const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
+        email: email,
+        password: senha
+      });
+
+      if (authError || !authData.user) {
+        throw new Error('Credenciais inválidas');
+      }
+
+      // Buscar dados do usuário na tabela usuarios
       const { data: usuario, error: userError } = await supabase
         .from('usuarios')
         .select('*')
         .eq('email', email)
-        .eq('senha', senha)
         .maybeSingle();
 
       if (userError || !usuario) {
-        throw new Error('Credenciais inválidas');
+        // Se não encontrar na tabela usuarios, criar registro
+        const { data: novoUsuario, error: createError } = await supabase
+          .from('usuarios')
+          .insert({
+            email: email,
+            senha: senha, // Em produção, não salvar senha em texto plano
+            nome_usuario: authData.user.email?.split('@')[0] || 'Usuário',
+          })
+          .select()
+          .single();
+
+        if (createError) {
+          throw new Error('Erro ao criar perfil do usuário');
+        }
+
+        // Buscar unidades do usuário
+        const { data: usuarioUnidades, error: unidadesError } = await supabase
+          .from('usuario_unidades')
+          .select(`
+            *,
+            unidades (*)
+          `)
+          .eq('usuario_id', novoUsuario.id);
+
+        if (unidadesError) {
+          throw new Error('Erro ao carregar unidades do usuário');
+        }
+
+        return {
+          usuario: novoUsuario,
+          unidades: usuarioUnidades || []
+        };
       }
 
       // Buscar unidades do usuário
@@ -48,7 +88,7 @@ export class AuthService {
     }
   }
 
-  // Login usando sistema local (localStorage)
+  // Login usando sistema local (localStorage) - fallback
   private static async loginLocal(email: string, senha: string) {
     const usuarios = JSON.parse(localStorage.getItem('usuarios') || '[]');
     const usuarioUnidades = JSON.parse(localStorage.getItem('usuario-unidades') || '[]');
@@ -75,7 +115,7 @@ export class AuthService {
     };
   }
 
-  // Cadastrar novo usuário e unidade
+  // Cadastrar novo usuário usando Supabase Auth
   static async cadastrar(dadosUsuario: any, dadosUnidade: any) {
     // Se Supabase não estiver disponível, usar sistema local
     if (!isSupabaseAvailable || !supabase) {
@@ -83,19 +123,20 @@ export class AuthService {
     }
 
     try {
-      // Verificar se email já existe
-      const { data: usuarioExistente, error: checkError } = await supabase
-        .from('usuarios')
-        .select('id')
-        .eq('email', dadosUsuario.email)
-        .maybeSingle();
+      // Criar usuário no Supabase Auth
+      const { data: authData, error: authError } = await supabase.auth.signUp({
+        email: dadosUsuario.email,
+        password: dadosUsuario.senha,
+        options: {
+          emailRedirectTo: undefined // Desabilitar confirmação por email
+        }
+      });
 
-      if (checkError && checkError.code !== 'PGRST116') {
-        throw new Error('Erro ao verificar email existente');
-      }
-
-      if (usuarioExistente) {
-        throw new Error('Email já cadastrado');
+      if (authError || !authData.user) {
+        if (authError?.message.includes('already registered')) {
+          throw new Error('Email já cadastrado');
+        }
+        throw new Error('Erro ao criar conta');
       }
 
       // Criar unidade
@@ -105,7 +146,8 @@ export class AuthService {
           nome: dadosUnidade.nome,
           tipo: dadosUnidade.tipo,
           logo: dadosUnidade.logo,
-          ativa: true
+          ativa: true,
+          proprietario_id: authData.user.id
         })
         .select()
         .single();
@@ -114,10 +156,11 @@ export class AuthService {
         throw new Error('Erro ao criar unidade');
       }
 
-      // Criar usuário
+      // Criar usuário na tabela usuarios
       const { data: usuario, error: usuarioError } = await supabase
         .from('usuarios')
         .insert({
+          id: authData.user.id, // Usar o mesmo ID do Supabase Auth
           email: dadosUsuario.email,
           senha: dadosUsuario.senha,
           nome_usuario: dadosUsuario.nomeUsuario,
@@ -128,7 +171,7 @@ export class AuthService {
         .single();
 
       if (usuarioError || !usuario) {
-        throw new Error('Erro ao criar usuário');
+        throw new Error('Erro ao criar perfil do usuário');
       }
 
       // Criar relacionamento usuário-unidade
@@ -161,7 +204,7 @@ export class AuthService {
     }
   }
 
-  // Cadastro usando sistema local
+  // Cadastro usando sistema local - fallback
   private static async cadastrarLocal(dadosUsuario: any, dadosUnidade: any) {
     const usuarios = JSON.parse(localStorage.getItem('usuarios') || '[]');
     const unidades = JSON.parse(localStorage.getItem('unidades') || '[]');
@@ -222,7 +265,36 @@ export class AuthService {
     return { usuario: novoUsuario, unidade: novaUnidade };
   }
 
-  // Recuperar senha
+  // Logout usando Supabase Auth
+  static async logout() {
+    if (isSupabaseAvailable && supabase) {
+      try {
+        await supabase.auth.signOut();
+      } catch (error) {
+        console.error('Erro ao fazer logout do Supabase:', error);
+      }
+    }
+    
+    // Limpar dados locais
+    localStorage.removeItem('usuario-logado');
+  }
+
+  // Verificar se usuário está logado
+  static async verificarSessao() {
+    if (!isSupabaseAvailable || !supabase) {
+      return null;
+    }
+
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      return session;
+    } catch (error) {
+      console.error('Erro ao verificar sessão:', error);
+      return null;
+    }
+  }
+
+  // Recuperar senha usando Supabase Auth
   static async recuperarSenha(email: string) {
     // Se Supabase não estiver disponível, usar sistema local
     if (!isSupabaseAvailable || !supabase) {
@@ -230,28 +302,25 @@ export class AuthService {
     }
 
     try {
-      const { data: usuario } = await supabase
-        .from('usuarios')
-        .select('id')
-        .eq('email', email)
-        .single();
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/reset-password`
+      });
 
-      if (!usuario) {
-        throw new Error('Email não encontrado');
+      if (error) {
+        if (error.message.includes('not found')) {
+          throw new Error('Email não encontrado');
+        }
+        throw new Error('Erro ao enviar email de recuperação');
       }
 
-      // Em um sistema real, aqui seria enviado um email
-      // Por enquanto, retornamos um código simulado
-      const codigo = Math.floor(100000 + Math.random() * 900000).toString();
-      
-      return { sucesso: true, codigo };
+      return { sucesso: true };
     } catch (error) {
       console.error('Erro na recuperação de senha:', error);
       throw error;
     }
   }
 
-  // Recuperação de senha local
+  // Recuperação de senha local - fallback
   private static async recuperarSenhaLocal(email: string) {
     const usuarios = JSON.parse(localStorage.getItem('usuarios') || '[]');
     const usuario = usuarios.find((u: any) => u.email === email);
@@ -272,18 +341,16 @@ export class AuthService {
     return { sucesso: true, codigo };
   }
 
-  // Alterar senha
-  static async alterarSenha(email: string, novaSenha: string) {
-    // Se Supabase não estiver disponível, usar sistema local
+  // Alterar senha usando Supabase Auth
+  static async alterarSenha(novaSenha: string) {
     if (!isSupabaseAvailable || !supabase) {
-      return this.alterarSenhaLocal(email, novaSenha);
+      throw new Error('Alteração de senha requer conexão com o servidor');
     }
 
     try {
-      const { error } = await supabase
-        .from('usuarios')
-        .update({ senha: novaSenha })
-        .eq('email', email);
+      const { error } = await supabase.auth.updateUser({
+        password: novaSenha
+      });
 
       if (error) {
         throw new Error('Erro ao alterar senha');
@@ -294,21 +361,6 @@ export class AuthService {
       console.error('Erro ao alterar senha:', error);
       throw error;
     }
-  }
-
-  // Alteração de senha local
-  private static async alterarSenhaLocal(email: string, novaSenha: string) {
-    const usuarios = JSON.parse(localStorage.getItem('usuarios') || '[]');
-    const usuarioIndex = usuarios.findIndex((u: any) => u.email === email);
-
-    if (usuarioIndex === -1) {
-      throw new Error('Usuário não encontrado');
-    }
-
-    usuarios[usuarioIndex].senha = novaSenha;
-    localStorage.setItem('usuarios', JSON.stringify(usuarios));
-
-    return { sucesso: true };
   }
 
   // Cadastrar usuário em unidade existente
@@ -325,37 +377,54 @@ export class AuthService {
     }
 
     try {
-      // Verificar se email já existe
-      const { data: usuarioExistente } = await supabase
-        .from('usuarios')
-        .select('id')
-        .eq('email', dadosUsuario.email)
-        .single();
-
       let usuarioId: string;
 
-      if (usuarioExistente) {
-        // Usuário já existe, apenas adicionar à unidade
-        usuarioId = usuarioExistente.id;
-      } else {
-        // Criar novo usuário
-        const { data: novoUsuario, error: usuarioError } = await supabase
+      // Tentar criar usuário no Supabase Auth
+      const { data: authData, error: authError } = await supabase.auth.signUp({
+        email: dadosUsuario.email,
+        password: dadosUsuario.senha,
+        options: {
+          emailRedirectTo: undefined // Desabilitar confirmação por email
+        }
+      });
+
+      if (authError) {
+        if (authError.message.includes('already registered')) {
+          // Usuário já existe no Auth, buscar na tabela usuarios
+          const { data: usuarioExistente } = await supabase
+            .from('usuarios')
+            .select('id')
+            .eq('email', dadosUsuario.email)
+            .single();
+
+          if (usuarioExistente) {
+            usuarioId = usuarioExistente.id;
+          } else {
+            throw new Error('Usuário existe no sistema de autenticação mas não na base de dados');
+          }
+        } else {
+          throw new Error('Erro ao criar usuário');
+        }
+      } else if (authData.user) {
+        usuarioId = authData.user.id;
+
+        // Criar usuário na tabela usuarios
+        const { error: usuarioError } = await supabase
           .from('usuarios')
           .insert({
+            id: usuarioId,
             email: dadosUsuario.email,
             senha: dadosUsuario.senha,
             nome_usuario: dadosUsuario.nomeUsuario,
             telefone: dadosUsuario.telefone,
             foto_usuario: dadosUsuario.fotoUsuario
-          })
-          .select()
-          .single();
+          });
 
-        if (usuarioError || !novoUsuario) {
-          throw new Error('Erro ao criar usuário');
+        if (usuarioError && !usuarioError.message.includes('duplicate key')) {
+          throw new Error('Erro ao criar perfil do usuário');
         }
-
-        usuarioId = novoUsuario.id;
+      } else {
+        throw new Error('Erro ao criar usuário');
       }
 
       // Verificar se já existe relacionamento
@@ -397,7 +466,7 @@ export class AuthService {
     }
   }
 
-  // Cadastro de usuário na unidade local
+  // Cadastro de usuário na unidade local - fallback
   private static async cadastrarUsuarioNaUnidadeLocal(
     dadosUsuario: any,
     unidadeId: string,
@@ -482,7 +551,7 @@ export class AuthService {
     }
   }
 
-  // Buscar usuários da unidade local
+  // Buscar usuários da unidade local - fallback
   private static async buscarUsuariosDaUnidadeLocal(unidadeId: string) {
     const usuarios = JSON.parse(localStorage.getItem('usuarios') || '[]');
     const usuarioUnidades = JSON.parse(localStorage.getItem('usuario-unidades') || '[]');
@@ -524,7 +593,7 @@ export class AuthService {
     }
   }
 
-  // Atualizar permissões local
+  // Atualizar permissões local - fallback
   private static async atualizarPermissoesLocal(usuarioId: string, unidadeId: string, novasPermissoes: any, novoChamado?: string) {
     const usuarioUnidades = JSON.parse(localStorage.getItem('usuario-unidades') || '[]');
     
@@ -564,7 +633,7 @@ export class AuthService {
     }
   }
 
-  // Remover usuário da unidade local
+  // Remover usuário da unidade local - fallback
   private static async removerUsuarioDaUnidadeLocal(usuarioId: string, unidadeId: string) {
     const usuarioUnidades = JSON.parse(localStorage.getItem('usuario-unidades') || '[]');
     
@@ -573,5 +642,37 @@ export class AuthService {
     );
     
     localStorage.setItem('usuario-unidades', JSON.stringify(novasRelacoes));
+  }
+
+  // Obter usuário atual da sessão
+  static async obterUsuarioAtual() {
+    if (!isSupabaseAvailable || !supabase) {
+      return null;
+    }
+
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (!user) {
+        return null;
+      }
+
+      // Buscar dados completos do usuário
+      const { data: usuario, error } = await supabase
+        .from('usuarios')
+        .select('*')
+        .eq('id', user.id)
+        .single();
+
+      if (error) {
+        console.error('Erro ao buscar dados do usuário:', error);
+        return null;
+      }
+
+      return usuario;
+    } catch (error) {
+      console.error('Erro ao obter usuário atual:', error);
+      return null;
+    }
   }
 }

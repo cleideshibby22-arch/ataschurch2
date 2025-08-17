@@ -1,5 +1,6 @@
 import { Usuario, Unidade, UsuarioUnidade } from '../types';
 import { AuthService } from '../services/authService';
+import { supabase, isSupabaseAvailable } from '../lib/supabase';
 
 // Função para sincronizar dados com servidor simulado
 const syncWithServer = async (data: any, action: 'save' | 'load') => {
@@ -66,9 +67,18 @@ export const saveToMultipleSources = (key: string, data: any) => {
 
 export const getUsuarioLogado = (): Usuario | null => {
   try {
-    const usuarioString = localStorage.getItem('usuario-logado');
-    if (!usuarioString) return null;
-    return JSON.parse(usuarioString);
+    // Primeiro verificar se há sessão ativa no Supabase
+    if (isSupabaseAvailable && supabase) {
+      // Esta função será chamada de forma síncrona, mas em um app real
+      // você usaria um hook ou context para gerenciar o estado da sessão
+      const usuarioString = localStorage.getItem('usuario-logado');
+      if (!usuarioString) return null;
+      return JSON.parse(usuarioString);
+    } else {
+      const usuarioString = localStorage.getItem('usuario-logado');
+      if (!usuarioString) return null;
+      return JSON.parse(usuarioString);
+    }
   } catch (error) {
     console.error('Erro ao obter usuário logado:', error);
     return null;
@@ -148,10 +158,19 @@ export const adicionarUsuarioNaUnidade = (usuarioId: string, unidadeId: string, 
 
 export const setUsuarioLogado = (usuario: Usuario): void => {
   localStorage.setItem('usuario-logado', JSON.stringify(usuario));
+  
+  // Se Supabase estiver disponível, também salvar no sessionStorage para sincronização
+  if (isSupabaseAvailable) {
+    sessionStorage.setItem('usuario-logado', JSON.stringify(usuario));
+  }
 };
 
 export const logout = (): void => {
+  // Usar o método de logout do AuthService que lida com Supabase
+  AuthService.logout().catch(console.error);
+  
   localStorage.removeItem('usuario-logado');
+  sessionStorage.removeItem('usuario-logado');
 };
 
 export const isAdministrador = (usuario: Usuario | null): boolean => {

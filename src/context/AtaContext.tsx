@@ -2,6 +2,7 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 import { Ata } from '../types';
 import { AtaService } from '../services/ataService';
 import { getUsuarioLogado } from '../utils/auth';
+import { supabase, isSupabaseAvailable } from '../lib/supabase';
 
 interface AtaContextType {
   atas: Ata[];
@@ -29,6 +30,20 @@ export const AtaProvider = function({ children }: { children: React.ReactNode })
   const [carregando, setCarregando] = useState(true);
 
   useEffect(() => {
+    // Verificar sessão do Supabase ao inicializar
+    if (isSupabaseAvailable && supabase) {
+      supabase.auth.onAuthStateChange(async (event, session) => {
+        if (event === 'SIGNED_OUT') {
+          setAtas([]);
+          localStorage.removeItem('usuario-logado');
+          sessionStorage.removeItem('usuario-logado');
+        } else if (event === 'SIGNED_IN' && session) {
+          // Recarregar atas quando usuário fizer login
+          await carregarAtas();
+        }
+      });
+    }
+    
     carregarAtas();
   }, []);
 
