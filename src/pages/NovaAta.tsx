@@ -153,7 +153,7 @@ const NovaAta: React.FC = () => {
     const dataParaSubmissao = {
       ...formData,
       data: formData.data || new Date().toISOString().split('T')[0],
-      proxima_reuniao: formData.proxima_reuniao || null
+      proxima_reuniao: formData.proxima_reuniao || undefined
     };
 
     try {
