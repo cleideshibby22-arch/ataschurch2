@@ -16,7 +16,7 @@ export class AuthService {
         .select('*')
         .eq('email', email)
         .eq('senha', senha)
-        .single();
+        .maybeSingle();
 
       if (userError || !usuario) {
         throw new Error('Credenciais inválidas');
