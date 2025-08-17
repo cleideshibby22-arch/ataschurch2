@@ -84,11 +84,15 @@ export class AuthService {
 
     try {
       // Verificar se email já existe
-      const { data: usuarioExistente } = await supabase
+      const { data: usuarioExistente, error: checkError } = await supabase
         .from('usuarios')
         .select('id')
         .eq('email', dadosUsuario.email)
-        .single();
+        .maybeSingle();
+
+      if (checkError && checkError.code !== 'PGRST116') {
+        throw new Error('Erro ao verificar email existente');
+      }
 
       if (usuarioExistente) {
         throw new Error('Email já cadastrado');
@@ -355,12 +359,16 @@ export class AuthService {
       }
 
       // Verificar se já existe relacionamento
-      const { data: relacaoExistente } = await supabase
+      const { data: relacaoExistente, error: relacaoCheckError } = await supabase
         .from('usuario_unidades')
         .select('id')
         .eq('usuario_id', usuarioId)
         .eq('unidade_id', unidadeId)
-        .single();
+        .maybeSingle();
+
+      if (relacaoCheckError && relacaoCheckError.code !== 'PGRST116') {
+        throw new Error('Erro ao verificar relacionamento existente');
+      }
 
       if (relacaoExistente) {
         throw new Error('Usuário já tem acesso a esta unidade');
