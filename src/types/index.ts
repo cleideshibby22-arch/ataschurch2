@@ -33,6 +33,25 @@ export interface Unidade {
   proprietarioId: string;
 }
 
+export interface UnidadeComDetalhesUsuario extends Unidade {
+  usuario_id: string;
+  nome_usuario: string;
+  data_cadastro: string;
+  telefone?: string;
+  foto_usuario?: string;
+  cargo: string;
+  tipo: 'proprietario' | 'administrador' | 'usuario';
+  permissoes: {
+    criarAta: boolean;
+    editarAta: boolean;
+    excluirAta: boolean;
+    gerenciarUsuarios: boolean;
+    gerenciarSistema: boolean;
+    verTodasAtas: boolean;
+    verAtasPorChamado: boolean;
+  };
+}
+
 export interface UsuarioUnidade {
   usuarioId: string;
   unidadeId: string;
