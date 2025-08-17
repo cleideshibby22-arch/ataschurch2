@@ -1,11 +1,20 @@
 import { supabase } from '../lib/supabase';
 import { Ata } from '../types';
 
+// Helper function to check if Supabase is available
+const isSupabaseAvailable = () => {
+  return supabase !== null && supabase !== undefined;
+};
+
 export class AtaService {
   /**
    * Busca atas do Supabase ou localStorage.
    */
   static async buscarAtas(unidadeId: string): Promise<Ata[]> {
+    if (!isSupabaseAvailable() || !supabase) {
+      return this.buscarAtasLocal(unidadeId);
+    }
+
     try {
       // Tenta buscar do Supabase primeiro
       const { data, error } = await supabase
@@ -43,6 +52,21 @@ export class AtaService {
    * Cadastra uma nova ata no Supabase.
    */
   static async cadastrarAta(novaAta: Omit<Ata, 'id' | 'created_at'>): Promise<Ata> {
+    if (!isSupabaseAvailable() || !supabase) {
+      // Gera um ID temporário para localStorage
+      const ataComId = {
+        ...novaAta,
+        created_at: new Date().toISOString(),
+        id: `temp_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+      } as Ata;
+      
+      const atasExistentes = this.buscarAtasLocal(novaAta.unidade_id!);
+      atasExistentes.unshift(ataComId);
+      this.salvarAtasLocal(novaAta.unidade_id!, atasExistentes);
+      
+      return ataComId;
+    }
+
     try {
       const { data, error } = await supabase
         .from('atas')
@@ -80,6 +104,21 @@ export class AtaService {
    * Atualiza uma ata existente.
    */
   static async atualizarAta(id: string, atualizacoes: Partial<Ata>): Promise<Ata> {
+    if (!isSupabaseAvailable() || !supabase) {
+      // Implementa atualização local
+      if (atualizacoes.unidade_id) {
+        const atasExistentes = this.buscarAtasLocal(atualizacoes.unidade_id);
+        const index = atasExistentes.findIndex(ata => ata.id === id);
+        
+        if (index !== -1) {
+          atasExistentes[index] = { ...atasExistentes[index], ...atualizacoes };
+          this.salvarAtasLocal(atualizacoes.unidade_id, atasExistentes);
+          return atasExistentes[index];
+        }
+      }
+      throw new Error('Ata não encontrada para atualização local');
+    }
+
     try {
       const { data, error } = await supabase
         .from('atas')
@@ -115,6 +154,24 @@ export class AtaService {
    * Remove uma ata por ID.
    */
   static async removerAta(id: string): Promise<void> {
+    if (!isSupabaseAvailable() || !supabase) {
+      // Implementa remoção local - precisa buscar em todas as unidades
+      const keys = Object.keys(localStorage).filter(key => key.startsWith('atas_'));
+      
+      for (const key of keys) {
+        const unidadeId = key.replace('atas_', '');
+        const atas = this.buscarAtasLocal(unidadeId);
+        const atasAtualizadas = atas.filter(ata => ata.id !== id);
+        
+        if (atas.length !== atasAtualizadas.length) {
+          this.salvarAtasLocal(unidadeId, atasAtualizadas);
+          return;
+        }
+      }
+      
+      throw new Error('Ata não encontrada para remoção local');
+    }
+
     try {
       const { error } = await supabase
         .from('atas')
