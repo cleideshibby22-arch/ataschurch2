@@ -10,21 +10,34 @@ export class AuthService {
     }
 
     try {
-      // Primeiro, buscar o usuário na tabela usuarios para verificar credenciais
-      const { data: usuario, error: userError } = await supabase
-        .from('usuarios')
-        .select('*')
-        .eq('email', email)
-        .eq('senha', senha)
-        .maybeSingle();
+      // Usar Supabase Auth para autenticação
+      const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
+        email,
+        password: senha
+      });
 
-      if (userError) {
-        console.warn('Erro ao buscar usuário no Supabase:', userError);
+      if (authError) {
+        if (authError.message.includes('Invalid login credentials')) {
+          throw new Error('Credenciais inválidas');
+        }
+        console.warn('Erro de autenticação no Supabase:', authError);
         return this.loginLocal(email, senha);
       }
 
-      if (!usuario) {
+      if (!authData.user) {
         throw new Error('Credenciais inválidas');
+      }
+
+      // Buscar dados do usuário na tabela usuarios
+      const { data: usuario, error: userError } = await supabase
+        .from('usuarios')
+        .select('*')
+        .eq('id', authData.user.id)
+        .maybeSingle();
+
+      if (userError || !usuario) {
+        console.warn('Erro ao buscar dados do usuário:', userError);
+        return this.loginLocal(email, senha);
       }
 
       // Buscar unidades do usuário
@@ -92,19 +105,46 @@ export class AuthService {
     }
 
     try {
-      // Verificar se usuário já existe
-      const { data: usuarioExistente } = await supabase
-        .from('usuarios')
-        .select('id')
-        .eq('email', dadosUsuario.email)
-        .maybeSingle();
+      // Primeiro, criar usuário no Supabase Auth
+      const { data: authData, error: authError } = await supabase.auth.signUp({
+        email: dadosUsuario.email,
+        password: dadosUsuario.senha,
+        options: {
+          emailRedirectTo: undefined // Desabilitar confirmação por email
+        }
+      });
 
-      if (usuarioExistente) {
-        throw new Error('Email já cadastrado');
+      if (authError) {
+        if (authError.message.includes('already registered')) {
+          throw new Error('Email já cadastrado');
+        }
+        console.warn('Erro ao criar usuário no Supabase Auth:', authError);
+        return this.cadastrarLocal(dadosUsuario, dadosUnidade);
       }
 
-      // Gerar ID único para o usuário
-      const usuarioId = crypto.randomUUID();
+      if (!authData.user) {
+        throw new Error('Erro ao criar usuário');
+      }
+
+      const usuarioId = authData.user.id;
+
+      // Criar usuário na tabela usuarios (sem senha)
+      const { data: usuario, error: usuarioError } = await supabase
+        .from('usuarios')
+        .insert({
+          id: usuarioId,
+          email: dadosUsuario.email,
+          nome_usuario: dadosUsuario.nomeUsuario,
+          telefone: dadosUsuario.telefone,
+          foto_usuario: dadosUsuario.fotoUsuario
+        })
+        .select()
+        .single();
+
+      if (usuarioError || !usuario) {
+        console.warn('Erro ao criar perfil do usuário no Supabase:', usuarioError);
+        return this.cadastrarLocal(dadosUsuario, dadosUnidade);
+      }
 
       // Criar unidade
       const { data: unidade, error: unidadeError } = await supabase
@@ -121,25 +161,6 @@ export class AuthService {
 
       if (unidadeError || !unidade) {
         console.warn('Erro ao criar unidade no Supabase, usando cadastro local:', unidadeError);
-        return this.cadastrarLocal(dadosUsuario, dadosUnidade);
-      }
-
-      // Criar usuário na tabela usuarios
-      const { data: usuario, error: usuarioError } = await supabase
-        .from('usuarios')
-        .insert({
-          id: usuarioId,
-          email: dadosUsuario.email,
-          senha: dadosUsuario.senha,
-          nome_usuario: dadosUsuario.nomeUsuario,
-          telefone: dadosUsuario.telefone,
-          foto_usuario: dadosUsuario.fotoUsuario
-        })
-        .select()
-        .single();
-
-      if (usuarioError || !usuario) {
-        console.warn('Erro ao criar usuário no Supabase, usando cadastro local:', usuarioError);
         return this.cadastrarLocal(dadosUsuario, dadosUnidade);
       }
 
@@ -384,13 +405,12 @@ export class AuthService {
       } else if (authData.user) {
         usuarioId = authData.user.id;
 
-        // Criar usuário na tabela usuarios
+        // Criar usuário na tabela usuarios (sem senha)
         const { error: usuarioError } = await supabase
           .from('usuarios')
           .insert({
             id: usuarioId,
             email: dadosUsuario.email,
-            senha: dadosUsuario.senha,
             nome_usuario: dadosUsuario.nomeUsuario,
             telefone: dadosUsuario.telefone,
             foto_usuario: dadosUsuario.fotoUsuario
