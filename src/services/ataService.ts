@@ -8,10 +8,23 @@ const isSupabaseAvailable = () => {
 
 export class AtaService {
   /**
+   * Verifica se um ID é um UUID válido
+   */
+  static isValidUUID(id: string): boolean {
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+    return uuidRegex.test(id);
+  }
+
+  /**
    * Busca atas do Supabase ou localStorage.
    */
   static async buscarAtas(unidadeId: string): Promise<Ata[]> {
     if (!isSupabaseAvailable() || !supabase) {
+      return this.buscarAtasLocal(unidadeId);
+    }
+
+    // Se o unidadeId não for um UUID válido, usar localStorage
+    if (!this.isValidUUID(unidadeId)) {
       return this.buscarAtasLocal(unidadeId);
     }
 

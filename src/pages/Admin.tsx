@@ -16,13 +16,13 @@ const Admin: React.FC = () => {
   });
 
   useEffect(() => {
-    const usuariosUnidade = JSON.parse(localStorage.getItem('usuarios-unidade') || '[]') as Usuario[];
+    const usuariosUnidade = JSON.parse(localStorage.getItem('usuarios') || '[]') as Usuario[];
     setUsuarios(usuariosUnidade);
     
     // Calcular estatísticas
     const dadosLocalStorage = {
       atas: localStorage.getItem('atas-sacramentais') || '[]',
-      usuarios: localStorage.getItem('usuarios-unidade') || '[]',
+      usuarios: localStorage.getItem('usuarios') || '[]',
       hinos: localStorage.getItem('hinos-personalizados') || '[]'
     };
     
@@ -109,7 +109,7 @@ const Admin: React.FC = () => {
         u.id === usuarioId ? { ...u, senha: '123456' } : u
       );
       setUsuarios(usuariosAtualizados);
-      localStorage.setItem('usuarios-unidade', JSON.stringify(usuariosAtualizados));
+      localStorage.setItem('usuarios', JSON.stringify(usuariosAtualizados));
       alert(`Senha do usuário ${nomeUsuario} foi resetada para "123456"`);
     }
   };
