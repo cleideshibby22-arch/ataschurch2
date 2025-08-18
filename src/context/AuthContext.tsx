@@ -138,7 +138,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (unidadeAtual) {
         const usuarioCompleto: Usuario = {
           id: usuario.id,
-          senha: '', // Não armazenar senha
+          senha: '', // Senha gerenciada pelo Supabase Auth
           unidadeId: unidadeAtual.unidade_id,
           tipoUnidade: unidadeAtual.unidades.tipo,
           nomeUnidade: unidadeAtual.unidades.nome,

@@ -155,7 +155,7 @@ const Login: React.FC = () => {
         const unidade = resultado.unidades[0];
         const usuarioLogado: Usuario = {
           id: resultado.usuario.id,
-          senha: formData.senha,
+          senha: '', // Senha gerenciada pelo Supabase Auth
           unidadeId: unidade.unidade_id,
           tipoUnidade: unidade.unidades.tipo,
           nomeUnidade: unidade.unidades.nome,
