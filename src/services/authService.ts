@@ -10,29 +10,21 @@ export class AuthService {
     }
 
     try {
-      // Fazer login com Supabase Auth
-      const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
-        email: email,
-        password: senha
-      });
-
-      if (authError || !authData.user) {
-        // Se falhar no Supabase, tentar login local como fallback
-        console.warn('Login no Supabase falhou, tentando login local:', authError?.message);
-        return this.loginLocal(email, senha);
-      }
-
-      // Buscar dados do usuário na tabela usuarios
+      // Primeiro, buscar o usuário na tabela usuarios para verificar credenciais
       const { data: usuario, error: userError } = await supabase
         .from('usuarios')
         .select('*')
         .eq('email', email)
+        .eq('senha', senha)
         .maybeSingle();
 
-      if (userError || !usuario) {
-        // Se não encontrar na tabela usuarios, tentar login local
-        console.warn('Usuário não encontrado na tabela usuarios, tentando login local');
+      if (userError) {
+        console.warn('Erro ao buscar usuário no Supabase:', userError);
         return this.loginLocal(email, senha);
+      }
+
+      if (!usuario) {
+        throw new Error('Credenciais inválidas');
       }
 
       // Buscar unidades do usuário
@@ -55,7 +47,11 @@ export class AuthService {
       };
     } catch (error) {
       console.error('Erro no login:', error);
-      // Para qualquer erro, tentar fallback local
+      // Se for erro de credenciais, não tentar fallback
+      if (error instanceof Error && error.message === 'Credenciais inválidas') {
+        throw error;
+      }
+      // Para outros erros, tentar fallback local
       console.warn('Erro no login do Supabase, tentando login local...');
       return this.loginLocal(email, senha);
     }
