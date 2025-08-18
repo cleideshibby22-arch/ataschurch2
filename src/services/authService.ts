@@ -17,9 +17,6 @@ export class AuthService {
       });
 
       if (authError) {
-        if (authError.message.includes('Invalid login credentials')) {
-          throw new Error('Credenciais inválidas');
-        }
         console.warn('Erro de autenticação no Supabase:', authError);
         return this.loginLocal(email, senha);
       }
@@ -60,10 +57,6 @@ export class AuthService {
       };
     } catch (error) {
       console.error('Erro no login:', error);
-      // Se for erro de credenciais, não tentar fallback
-      if (error instanceof Error && error.message === 'Credenciais inválidas') {
-        throw error;
-      }
       // Para outros erros, tentar fallback local
       console.warn('Erro no login do Supabase, tentando login local...');
       return this.loginLocal(email, senha);
@@ -115,9 +108,6 @@ export class AuthService {
       });
 
       if (authError) {
-        if (authError.message.includes('already registered')) {
-          throw new Error('Email já cadastrado');
-        }
         console.warn('Erro ao criar usuário no Supabase Auth:', authError);
         return this.cadastrarLocal(dadosUsuario, dadosUnidade);
       }
@@ -191,10 +181,6 @@ export class AuthService {
       return { usuario, unidade };
     } catch (error) {
       console.error('Erro no cadastro:', error);
-      // Se for erro de email já cadastrado, não tentar fallback
-      if (error instanceof Error && error.message === 'Email já cadastrado') {
-        throw error;
-      }
       // Para outros erros, usar cadastro local
       console.warn('Erro no cadastro do Supabase, usando cadastro local...');
       return this.cadastrarLocal(dadosUsuario, dadosUnidade);
@@ -313,7 +299,9 @@ export class AuthService {
       return { sucesso: true };
     } catch (error) {
       console.error('Erro na recuperação de senha:', error);
-      throw error;
+      // Tentar fallback local em caso de erro
+      console.warn('Erro na recuperação do Supabase, tentando local...');
+      return this.recuperarSenhaLocal(email);
     }
   }
 
