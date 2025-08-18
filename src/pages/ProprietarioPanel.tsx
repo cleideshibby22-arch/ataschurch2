@@ -3,11 +3,11 @@ import { Shield, Database, Users, Building, BarChart3, Settings, Download, Uploa
 import { useNavigate } from 'react-router-dom';
 import { Unidade, Usuario } from '../types';
 import { criarUnidade, logout, excluirUnidadeCompleta, excluirUsuarioGlobal, obterEstatisticasUnidade } from '../utils/auth';
-import { useAta } from '../context/AtaContext';
+import { useAuth } from '../context/AuthContext';
 
 const ProprietarioPanel: React.FC = () => {
   const navigate = useNavigate();
-  const { usuario } = useAta();
+  const { usuario, logout: authLogout } = useAuth();
   const [unidades, setUnidades] = useState<Unidade[]>([]);
   const [mostrarModalUnidade, setMostrarModalUnidade] = useState(false);
   const [unidadeEditando, setUnidadeEditando] = useState<Unidade | null>(null);
@@ -461,7 +461,7 @@ const ProprietarioPanel: React.FC = () => {
   };
 
   const handleLogout = () => {
-    logout();
+    authLogout();
     navigate('/login');
   };
 

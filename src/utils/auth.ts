@@ -148,20 +148,13 @@ export const adicionarUsuarioNaUnidade = (usuarioId: string, unidadeId: string, 
 };
 
 export const setUsuarioLogado = (usuario: Usuario): void => {
-  localStorage.setItem('usuario-logado', JSON.stringify(usuario));
-  
-  // Se Supabase estiver disponível, também salvar no sessionStorage para sincronização
-  if (isSupabaseAvailable) {
-    sessionStorage.setItem('usuario-logado', JSON.stringify(usuario));
-  }
+  // Esta função agora é gerenciada pelo AuthContext
+  console.warn('setUsuarioLogado foi movido para AuthContext. Use useAuth().setUsuarioLogado');
 };
 
 export const logout = (): void => {
-  // Usar o método de logout do AuthService que lida com Supabase
-  AuthService.logout().catch(console.error);
-  
-  localStorage.removeItem('usuario-logado');
-  sessionStorage.removeItem('usuario-logado');
+  // Esta função agora é gerenciada pelo AuthContext
+  console.warn('logout foi movido para AuthContext. Use useAuth().logout');
 };
 
 export const isAdministrador = (usuario: Usuario | null): boolean => {

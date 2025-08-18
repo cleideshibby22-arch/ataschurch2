@@ -2,13 +2,15 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Calendar, Search, Eye, Edit, Trash2 } from 'lucide-react';
 import { useAta } from '../context/AtaContext';
+import { useAuth } from '../context/AuthContext';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { TIPOS_REUNIAO, TipoReuniao } from '../types';
 import { temPermissao } from '../utils/auth';
 
 const ListaAtas: React.FC = () => {
-  const { atas, excluirAta, carregando, usuario } = useAta();
+  const { atas, excluirAta, carregando } = useAta();
+  const { usuario } = useAuth();
   const [busca, setBusca] = useState('');
   const [alaFiltro, setAlaFiltro] = useState('');
   const [tipoFiltro, setTipoFiltro] = useState<TipoReuniao | ''>('');

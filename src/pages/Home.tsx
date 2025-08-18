@@ -2,12 +2,14 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { Plus, List, FileText, Calendar, Users, Building } from 'lucide-react';
 import { useAta } from '../context/AtaContext';
+import { useAuth } from '../context/AuthContext';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { TIPOS_REUNIAO } from '../types';
 
 const Home: React.FC = () => {
   const { atas } = useAta();
+  const { usuario } = useAuth();
   const atasRecentes = atas.slice(0, 5);
 
   const estatisticasPorTipo = Object.keys(TIPOS_REUNIAO).reduce((acc, tipo) => {

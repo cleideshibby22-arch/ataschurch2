@@ -1,13 +1,11 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { Ata } from '../types';
 import { AtaService } from '../services/ataService';
-import { supabase, isSupabaseAvailable } from '../lib/supabase';
-import { Usuario } from '../types';
+import { useAuth } from './AuthContext';
 
 interface AtaContextType {
   atas: Ata[];
   carregando: boolean;
-  usuario: Usuario | null;
   adicionarAta: (ata: Omit<Ata, 'id' | 'created_at' | 'unidade_id' | 'criado_por'>) => void;
   editarAta: (id: string, ata: Omit<Ata, 'id' | 'created_at' | 'unidade_id' | 'criado_por'>) => void;
   obterAta: (id: string) => Ata | undefined;
@@ -28,68 +26,17 @@ export const useAta = function() {
 
 export const AtaProvider = function({ children }: { children: React.ReactNode }) {
   const [atas, setAtas] = useState<Ata[]>([]);
-  const [carregando, setCarregando] = useState(true);
-  const [usuario, setUsuario] = useState<Usuario | null>(null);
-
-  useEffect(() => {
-    inicializarAuth();
-  }, []);
+  const [carregando, setCarregando] = useState(false);
+  const { usuario } = useAuth();
 
   useEffect(() => {
     if (usuario?.unidadeId) {
       carregarAtas();
+    } else {
+      setAtas([]);
     }
   }, [usuario]);
-  const inicializarAuth = async () => {
-    setCarregando(true);
-    
-    if (isSupabaseAvailable && supabase) {
-      // Verificar sessão atual
-      const { data: { session } } = await supabase.auth.getSession();
-      
-      if (session?.user) {
-        await carregarUsuarioLogado(session.user.id);
-      } else {
-        // Fallback para localStorage se não houver sessão
-        const usuarioLocal = localStorage.getItem('usuario-logado');
-        if (usuarioLocal) {
-          const usuarioData = JSON.parse(usuarioLocal);
-          setUsuario(usuarioData);
-        }
-      }
-      
-      // Escutar mudanças de autenticação
-      supabase.auth.onAuthStateChange(async (event, session) => {
-        if (event === 'SIGNED_OUT') {
-          setUsuario(null);
-          setAtas([]);
-          localStorage.removeItem('usuario-logado');
-        } else if (event === 'SIGNED_IN' && session?.user) {
-          await carregarUsuarioLogado(session.user.id);
-        }
-      });
-    } else {
-      // Fallback para localStorage
-      const usuarioLocal = localStorage.getItem('usuario-logado');
-      if (usuarioLocal) {
-        const usuarioData = JSON.parse(usuarioLocal);
-        setUsuario(usuarioData);
-      }
-    }
-    
-    setCarregando(false);
-  };
 
-  const carregarUsuarioLogado = async (userId: string) => {
-    try {
-      if (!isSupabaseAvailable || !supabase) return;
-
-      // Esta função não é mais necessária pois o login é feito diretamente na tabela usuarios
-      console.log('carregarUsuarioLogado chamada, mas não é mais necessária');
-    } catch (error) {
-      console.error('Erro ao carregar usuário:', error);
-    }
-  };
   const carregarAtas = async () => {
     try {
       setCarregando(true);
@@ -178,7 +125,6 @@ export const AtaProvider = function({ children }: { children: React.ReactNode })
     <AtaContext.Provider value={{ 
       atas, 
       carregando, 
-      usuario,
       adicionarAta, 
       editarAta, 
       obterAta, 

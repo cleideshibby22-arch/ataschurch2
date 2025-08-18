@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { LogIn, Eye, EyeOff, Mail, Lock } from 'lucide-react';
-import { Usuario, Unidade } from '../types';
-import { setUsuarioLogado } from '../utils/auth';
+import { Usuario } from '../types';
+import { useAuth } from '../context/AuthContext';
 import { AuthService } from '../services/authService';
 
 interface UnidadeComDetalhesUsuario extends Unidade {
@@ -26,6 +26,7 @@ interface UnidadeComDetalhesUsuario extends Unidade {
 
 const Login: React.FC = () => {
   const navigate = useNavigate();
+  const { setUsuarioLogado } = useAuth();
   const [formData, setFormData] = useState({
     email: '',
     senha: ''

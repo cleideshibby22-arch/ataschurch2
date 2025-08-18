@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { Settings, Database, Users, FileText, Trash2, Download, Upload, AlertTriangle, CheckCircle } from 'lucide-react';
 import { useAta } from '../context/AtaContext';
+import { useAuth } from '../context/AuthContext';
 import { limparTodosDados } from '../utils/auth';
 import { Usuario } from '../types';
 
 const Admin: React.FC = () => {
-  const { atas, limparTodasAtas, usuario } = useAta();
+  const { atas, limparTodasAtas } = useAta();
+  const { usuario } = useAuth();
   const [usuarios, setUsuarios] = useState<Usuario[]>([]);
   const [estatisticas, setEstatisticas] = useState({
     totalAtas: 0,

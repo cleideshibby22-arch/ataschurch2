@@ -2,6 +2,7 @@ import React from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { ArrowLeft, Printer, Edit, Calendar, Users, FileText, MapPin, Clock, Book } from 'lucide-react';
 import { useAta } from '../context/AtaContext';
+import { useAuth } from '../context/AuthContext';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { TIPOS_REUNIAO } from '../types';
@@ -10,7 +11,8 @@ import { temPermissao } from '../utils/auth';
 const VisualizarAta: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { obterAta, usuario } = useAta();
+  const { obterAta } = useAta();
+  const { usuario } = useAuth();
 
   const ata = id ? obterAta(id) : undefined;
 
