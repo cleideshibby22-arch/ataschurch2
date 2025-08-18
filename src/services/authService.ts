@@ -92,20 +92,19 @@ export class AuthService {
     }
 
     try {
-      // Criar usuário no Supabase Auth
-      const { data: authData, error: authError } = await supabase.auth.signUp({
-        email: dadosUsuario.email,
-        password: dadosUsuario.senha,
-        options: {
-          emailRedirectTo: undefined // Desabilitar confirmação por email
-        }
-      });
+      // Verificar se usuário já existe
+      const { data: usuarioExistente } = await supabase
+        .from('usuarios')
+        .select('id')
+        .eq('email', dadosUsuario.email)
+        .maybeSingle();
 
-      if (authError || !authData.user) {
-        // Se falhar no Supabase, usar cadastro local
-        console.warn('Cadastro no Supabase falhou, usando cadastro local:', authError?.message);
-        return this.cadastrarLocal(dadosUsuario, dadosUnidade);
+      if (usuarioExistente) {
+        throw new Error('Email já cadastrado');
       }
+
+      // Gerar ID único para o usuário
+      const usuarioId = crypto.randomUUID();
 
       // Criar unidade
       const { data: unidade, error: unidadeError } = await supabase
@@ -115,7 +114,7 @@ export class AuthService {
           tipo: dadosUnidade.tipo,
           logo: dadosUnidade.logo,
           ativa: true,
-          proprietario_id: authData.user.id
+          proprietario_id: usuarioId
         })
         .select()
         .single();
@@ -129,7 +128,7 @@ export class AuthService {
       const { data: usuario, error: usuarioError } = await supabase
         .from('usuarios')
         .insert({
-          id: authData.user.id, // Usar o mesmo ID do Supabase Auth
+          id: usuarioId,
           email: dadosUsuario.email,
           senha: dadosUsuario.senha,
           nome_usuario: dadosUsuario.nomeUsuario,
@@ -171,7 +170,11 @@ export class AuthService {
       return { usuario, unidade };
     } catch (error) {
       console.error('Erro no cadastro:', error);
-      // Para qualquer erro, usar cadastro local
+      // Se for erro de email já cadastrado, não tentar fallback
+      if (error instanceof Error && error.message === 'Email já cadastrado') {
+        throw error;
+      }
+      // Para outros erros, usar cadastro local
       console.warn('Erro no cadastro do Supabase, usando cadastro local...');
       return this.cadastrarLocal(dadosUsuario, dadosUnidade);
     }

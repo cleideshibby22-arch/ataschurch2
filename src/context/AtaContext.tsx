@@ -84,68 +84,8 @@ export const AtaProvider = function({ children }: { children: React.ReactNode })
     try {
       if (!isSupabaseAvailable || !supabase) return;
 
-      // Buscar dados do usuário
-      const { data: usuarioData, error: usuarioError } = await supabase
-        .from('usuarios')
-        .select('*')
-        .eq('id', userId)
-        .single();
-
-      if (usuarioError || !usuarioData) {
-        console.error('Erro ao buscar dados do usuário:', usuarioError);
-        return;
-      }
-
-      // Buscar unidades do usuário
-      const { data: usuarioUnidades, error: unidadesError } = await supabase
-        .from('usuario_unidades')
-        .select(`
-          *,
-          unidades (*)
-        `)
-        .eq('usuario_id', userId);
-
-      if (unidadesError) {
-        console.error('Erro ao buscar unidades:', unidadesError);
-        return;
-      }
-
-      // Se tem unidades, usar a primeira ou a última usada
-      if (usuarioUnidades && usuarioUnidades.length > 0) {
-        // Verificar se há uma unidade salva como última usada
-        const ultimaUnidadeUsada = localStorage.getItem('ultima-unidade-usada');
-        let relacao = usuarioUnidades[0]; // Default para primeira unidade
-        
-        if (ultimaUnidadeUsada) {
-          const relacaoSalva = usuarioUnidades.find(uu => uu.unidade_id === ultimaUnidadeUsada);
-          if (relacaoSalva) {
-            relacao = relacaoSalva;
-          }
-        }
-        
-        const unidade = relacao.unidades;
-        
-        const usuarioCompleto: Usuario = {
-          id: usuarioData.id,
-          senha: '', // Não armazenar senha
-          unidadeId: unidade.id,
-          tipoUnidade: unidade.tipo,
-          nomeUnidade: unidade.nome,
-          logoUnidade: unidade.logo || '',
-          nomeUsuario: usuarioData.nome_usuario,
-          email: usuarioData.email,
-          cargo: relacao.cargo,
-          telefone: usuarioData.telefone || '',
-          fotoUsuario: usuarioData.foto_usuario || '',
-          dataCadastro: usuarioData.data_cadastro,
-          tipo: relacao.tipo,
-          permissoes: relacao.permissoes
-        };
-
-        setUsuario(usuarioCompleto);
-        localStorage.setItem('usuario-logado', JSON.stringify(usuarioCompleto));
-        localStorage.setItem('ultima-unidade-usada', unidade.id);
-      }
+      // Esta função não é mais necessária pois o login é feito diretamente na tabela usuarios
+      console.log('carregarUsuarioLogado chamada, mas não é mais necessária');
     } catch (error) {
       console.error('Erro ao carregar usuário:', error);
     }
