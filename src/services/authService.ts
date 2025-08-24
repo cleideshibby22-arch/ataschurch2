@@ -71,23 +71,36 @@ export class AuthService {
         email: dadosUsuario.email,
         password: dadosUsuario.senha,
         options: {
-          emailRedirectTo: undefined, // Desabilitar confirmação por email
-          data: {
-            email_confirm: false
-          }
+          emailRedirectTo: `${window.location.origin}/login`
         }
       });
 
       if (authError) {
-        if (authError.message.includes('already registered')) {
+        if (authError.message.includes('already registered') || authError.message.includes('User already registered')) {
           throw new Error('Email já cadastrado');
         }
-        throw new Error('Erro ao criar conta: ' + authError.message);
+        if (authError.message.includes('Error sending confirmation email')) {
+          // Se houver erro no envio de email, continuar com o processo
+          // pois o usuário foi criado mesmo sem confirmação
+          console.warn('Aviso: Email de confirmação não pôde ser enviado, mas conta foi criada');
+        } else {
+          throw new Error('Erro ao criar conta: ' + authError.message);
+        }
       }
 
       const user = authData.user;
       if (!user) {
-        throw new Error('Erro ao criar usuário');
+        // Se não temos user mas também não temos erro de email, algo deu errado
+        if (!authError || !authError.message.includes('Error sending confirmation email')) {
+          throw new Error('Erro ao criar usuário');
+        }
+        // Se chegou aqui, provavelmente o usuário foi criado mas há problema com email
+        // Tentar obter o usuário atual
+        const { data: { user: currentUser } } = await supabase.auth.getUser();
+        if (!currentUser) {
+          throw new Error('Usuário criado mas não foi possível obter dados');
+        }
+        user = currentUser;
       }
 
       const usuarioId = user.id;
