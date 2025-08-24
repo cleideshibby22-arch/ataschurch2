@@ -158,15 +158,15 @@ const Login: React.FC = () => {
           id: resultado.usuario.id,
           senha: '',
           unidadeId: unidade.unidade_id,
-          tipoUnidade: unidade.unidades.tipo,
-          nomeUnidade: unidade.unidades.nome,
-          logoUnidade: unidade.unidades.logo || '',
+          tipoUnidade: unidade.unidades?.tipo || '',
+          nomeUnidade: unidade.unidades?.nome || '',
+          logoUnidade: unidade.unidades?.logo || '',
           nomeUsuario: resultado.usuario.nome_usuario,
           email: resultado.usuario.email,
           cargo: unidade.cargo,
           telefone: resultado.usuario.telefone || '',
           fotoUsuario: resultado.usuario.foto_usuario || '',
-          dataCadastro: resultado.usuario.data_cadastro,
+          dataCadastro: resultado.usuario.data_cadastro || resultado.usuario.created_at,
           tipo: unidade.tipo,
           permissoes: unidade.permissoes
         };
@@ -177,10 +177,10 @@ const Login: React.FC = () => {
       } else {
         // Se tem múltiplas unidades, mostrar seleção
         const unidadesFormatadas = resultado.unidades.map((uu: any) => ({
-          ...uu.unidades,
+          ...(uu.unidades || {}),
           usuario_id: resultado.usuario.id,
           nome_usuario: resultado.usuario.nome_usuario,
-          data_cadastro: resultado.usuario.data_cadastro,
+          data_cadastro: resultado.usuario.data_cadastro || resultado.usuario.created_at,
           telefone: resultado.usuario.telefone,
           foto_usuario: resultado.usuario.foto_usuario,
           cargo: uu.cargo,

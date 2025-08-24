@@ -151,6 +151,7 @@ const Cadastro: React.FC = () => {
         telefone: resultado.usuario.telefone || '',
         fotoUsuario: resultado.usuario.foto_usuario || '',
         dataCadastro: resultado.usuario.data_cadastro,
+        dataCadastro: resultado.usuario.data_cadastro || resultado.usuario.created_at,
         tipo: 'administrador' as const,
         permissoes: {
           criarAta: true,
@@ -168,7 +169,9 @@ const Cadastro: React.FC = () => {
       navigate('/');
     } catch (error) {
       console.error('Erro ao cadastrar:', error);
-      setErros({ geral: error instanceof Error ? error.message : 'Erro ao realizar cadastro. Tente novamente.' });
+      const errorMessage = error instanceof Error ? error.message : 'Erro ao realizar cadastro. Tente novamente.';
+      console.error('Erro detalhado no cadastro:', errorMessage);
+      setErros({ geral: errorMessage });
     } finally {
       setCarregando(false);
     }

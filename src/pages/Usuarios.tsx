@@ -248,7 +248,7 @@ const Usuarios: React.FC = () => {
           usuario.unidadeId,
           formData.tipo,
           permissoes,
-          formData.chamado || undefined
+          formData.chamado || null
         );
 
         await carregarUsuarios();
@@ -257,7 +257,9 @@ const Usuarios: React.FC = () => {
       }
     } catch (error) {
       console.error('Erro ao salvar usuário:', error);
-      setErros({ geral: error instanceof Error ? error.message : 'Erro ao salvar usuário. Tente novamente.' });
+      const errorMessage = error instanceof Error ? error.message : 'Erro ao salvar usuário. Tente novamente.';
+      console.error('Erro detalhado ao salvar usuário:', errorMessage);
+      setErros({ geral: errorMessage });
     } finally {
       setCarregando(false);
     }
