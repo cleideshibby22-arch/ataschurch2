@@ -275,7 +275,7 @@ export class AuthService {
     unidadeId: string,
     tipo: 'administrador' | 'usuario',
     permissoes: any,
-    chamado?: string
+    chamado?: string | null
   ) {
     // Verificar se Supabase está disponível
     if (!isSupabaseAvailable || !supabase) {
