@@ -68,7 +68,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         .from('usuarios')
         .select('*')
         .eq('id', userId)
-        .single();
+        .maybeSingle();
 
       if (usuarioError || !usuario) {
         console.error('Erro ao buscar usuário:', usuarioError);
