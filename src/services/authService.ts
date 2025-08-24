@@ -82,18 +82,20 @@ export class AuthService {
         throw new Error('Erro ao criar conta: ' + authError.message);
       }
 
-      if (!authData.user) {
+      const user = authData.user;
+      if (!user) {
         throw new Error('Erro ao criar usuário');
       }
 
-      const usuarioId = authData.user.id;
+      const usuarioId = user.id;
 
-      // Criar usuário na tabela usuarios (sem senha)
+      // Criar usuário na tabela usuarios - ESSENCIAL: usar o UUID do Supabase Auth
       const { data: usuario, error: usuarioError } = await supabase
         .from('usuarios')
         .insert({
-          id: usuarioId,
+          id: user.id,   // <- ESSENCIAL para a policy RLS
           email: dadosUsuario.email,
+          senha: '', // Campo obrigatório mas vazio (senha gerenciada pelo Supabase Auth)
           nome_usuario: dadosUsuario.nomeUsuario,
           telefone: dadosUsuario.telefone,
           foto_usuario: dadosUsuario.fotoUsuario
@@ -113,7 +115,7 @@ export class AuthService {
           tipo: dadosUnidade.tipo,
           logo: dadosUnidade.logo,
           ativa: true,
-          proprietario_id: usuarioId
+          proprietario_id: user.id
         })
         .select()
         .single();
@@ -126,7 +128,7 @@ export class AuthService {
       const { error: relacaoError } = await supabase
         .from('usuario_unidades')
         .insert({
-          usuario_id: usuario.id,
+          usuario_id: user.id,
           unidade_id: unidade.id,
           cargo: dadosUsuario.cargo,
           tipo: 'administrador',
