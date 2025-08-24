@@ -150,7 +150,6 @@ const Cadastro: React.FC = () => {
         cargo: formData.cargo,
         telefone: resultado.usuario.telefone || '',
         fotoUsuario: resultado.usuario.foto_usuario || '',
-        dataCadastro: resultado.usuario.data_cadastro,
         dataCadastro: resultado.usuario.data_cadastro || resultado.usuario.created_at,
         tipo: 'administrador' as const,
         permissoes: {
