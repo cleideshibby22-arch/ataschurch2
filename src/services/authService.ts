@@ -71,6 +71,7 @@ export class AuthService {
         email: dadosUsuario.email,
         password: dadosUsuario.senha,
         options: {
+          disableEmailConfirmation: true,
           emailRedirectTo: `${window.location.origin}/login`
         }
       });
