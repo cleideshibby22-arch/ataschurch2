@@ -378,13 +378,14 @@ export class AuthService {
         .from('usuario_unidades')
         .update({
           permissoes: novasPermissoes,
-          chamado: novoChamado
+          chamado: novoChamado || null
         })
         .eq('usuario_id', usuarioId)
         .eq('unidade_id', unidadeId);
 
       if (error) {
-        throw new Error('Erro ao atualizar permissões');
+        console.error('Erro detalhado ao atualizar permissões:', error);
+        throw new Error(`Erro ao atualizar permissões: ${error.message}`);
       }
     } catch (error) {
       console.error('Erro ao atualizar permissões:', error);

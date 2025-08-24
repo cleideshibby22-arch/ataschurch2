@@ -113,7 +113,8 @@ export class HinoService {
         .eq('numero', numero);
 
       if (error) {
-        throw new Error('Erro ao remover hino personalizado');
+        console.error('Erro detalhado ao remover hino:', error);
+        throw new Error(`Erro ao remover hino personalizado: ${error.message}`);
       }
     } catch (error) {
       console.error('Erro ao remover hino:', error);

@@ -33,7 +33,8 @@ const ListaAtas: React.FC = () => {
         excluirAta(id);
       } catch (error) {
         console.error('Erro ao excluir ata:', error);
-        alert('Erro ao excluir ata. Tente novamente.');
+        const errorMessage = error instanceof Error ? error.message : 'Erro ao excluir ata. Tente novamente.';
+        alert(errorMessage);
       }
     }
   };

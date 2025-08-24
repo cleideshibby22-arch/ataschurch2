@@ -155,7 +155,7 @@ const NovaAta: React.FC = () => {
     const dataParaSubmissao = {
       ...formData,
       data: formData.data || new Date().toISOString().split('T')[0],
-      proxima_reuniao: formData.proxima_reuniao || undefined
+      proxima_reuniao: formData.proxima_reuniao || null
     };
 
     try {
@@ -168,7 +168,8 @@ const NovaAta: React.FC = () => {
       navigate('/atas');
     } catch (error) {
       console.error('Erro ao salvar ata:', error);
-      alert('Erro ao salvar ata. Tente novamente.');
+      const errorMessage = error instanceof Error ? error.message : 'Erro ao salvar ata. Tente novamente.';
+      alert(errorMessage);
     }
   };
 

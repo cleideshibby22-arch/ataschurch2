@@ -107,6 +107,8 @@ export const AtaProvider = function({ children }: { children: React.ReactNode })
       await carregarAtas(); // Recarregar atas após excluir
     } catch (error) {
       console.error('Erro ao excluir ata:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Erro ao excluir ata';
+      console.error('Erro detalhado ao excluir ata:', errorMessage);
       throw error;
     }
   };

@@ -168,7 +168,9 @@ const Perfil: React.FC = () => {
       });
     } catch (error) {
       console.error('Erro ao alterar senha:', error);
-      setErros({ geral: error instanceof Error ? error.message : 'Erro ao alterar senha. Tente novamente.' });
+      const errorMessage = error instanceof Error ? error.message : 'Erro ao alterar senha. Tente novamente.';
+      console.error('Erro detalhado ao alterar senha:', errorMessage);
+      setErros({ geral: errorMessage });
     } finally {
       setCarregando(false);
     }

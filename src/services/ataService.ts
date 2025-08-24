@@ -64,7 +64,7 @@ export class AtaService {
 
       if (error) {
         console.error('Erro ao cadastrar ata:', error);
-        throw new Error(error.message);
+        throw new Error(`Erro ao cadastrar ata: ${error.message}`);
       }
 
       return data;
@@ -92,7 +92,7 @@ export class AtaService {
 
       if (error) {
         console.error('Erro ao atualizar ata:', error);
-        throw new Error(error.message);
+        throw new Error(`Erro ao atualizar ata: ${error.message}`);
       }
 
       return data;
@@ -118,7 +118,7 @@ export class AtaService {
 
       if (error) {
         console.error('Erro ao remover ata:', error);
-        throw new Error(error.message);
+        throw new Error(`Erro ao remover ata: ${error.message}`);
       }
     } catch (error) {
       console.error('Erro ao remover ata:', error);
