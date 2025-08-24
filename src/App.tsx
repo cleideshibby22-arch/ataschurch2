@@ -13,6 +13,7 @@ import Usuarios from './pages/Usuarios'
 import OracoesSacramentais from './pages/OracoesSacramentais'
 import Admin from './pages/Admin'
 import ProprietarioPanel from './pages/ProprietarioPanel'
+import Perfil from './pages/Perfil'
 import { AtaProvider } from './context/AtaContext'
 import { AuthProvider } from './context/AuthContext'
 
@@ -35,6 +36,7 @@ const AppRoutes: React.FC = () => {
             <Route path="/usuarios" element={<Usuarios />} />
             <Route path="/oracoes-sacramentais" element={<OracoesSacramentais />} />
             <Route path="/admin" element={<Admin />} />
+            <Route path="/perfil" element={<Perfil />} />
           </Routes>
         </Layout>
       } />

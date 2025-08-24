@@ -407,6 +407,51 @@ export class AuthService {
     }
   }
 
+  // Atualizar perfil do usuário
+  static async atualizarPerfil(usuarioId: string, dadosAtualizacao: {
+    nome_usuario?: string;
+    telefone?: string;
+    foto_usuario?: string;
+  }) {
+    if (!isSupabaseAvailable || !supabase) {
+      throw new Error('Sistema não disponível. Verifique sua conexão.');
+    }
+
+    try {
+      const { error } = await supabase
+        .from('usuarios')
+        .update(dadosAtualizacao)
+        .eq('id', usuarioId);
+
+      if (error) {
+        throw new Error('Erro ao atualizar perfil');
+      }
+    } catch (error) {
+      console.error('Erro ao atualizar perfil:', error);
+      throw error;
+    }
+  }
+
+  // Verificar senha atual
+  static async verificarSenhaAtual(email: string, senhaAtual: string) {
+    if (!isSupabaseAvailable || !supabase) {
+      throw new Error('Sistema não disponível. Verifique sua conexão.');
+    }
+
+    try {
+      // Tentar fazer login com as credenciais atuais para verificar
+      const { error } = await supabase.auth.signInWithPassword({
+        email,
+        password: senhaAtual
+      });
+
+      return { valida: !error };
+    } catch (error) {
+      console.error('Erro ao verificar senha atual:', error);
+      return { valida: false };
+    }
+  }
+
   // Obter usuário atual da sessão
   static async obterUsuarioAtual() {
     if (!isSupabaseAvailable || !supabase) {

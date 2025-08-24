@@ -137,21 +137,26 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
             <div className="flex items-center space-x-4">
               <div className="hidden md:flex items-center space-x-2 text-sm">
                 {/* Foto do usuário ou ícone padrão */}
-                {usuario.fotoUsuario ? (
-                  <img 
-                    src={usuario.fotoUsuario} 
-                    alt="Foto do usuário" 
-                    className="h-6 w-6 rounded-full object-cover border border-blue-300"
-                  />
-                ) : (
-                  <User className="h-4 w-4" />
-                )}
-                <div className="text-right">
-                  <div className="font-medium">{usuario.nomeUsuario}</div>
-                  <div className="text-xs text-blue-200">
-                    {usuario.cargo || 'Usuário'}
+                <Link
+                  to="/perfil"
+                  className="flex items-center space-x-2 text-gray-200 hover:text-white transition-colors"
+                >
+                  {usuario.fotoUsuario ? (
+                    <img 
+                      src={usuario.fotoUsuario} 
+                      alt="Foto do usuário" 
+                      className="h-6 w-6 rounded-full object-cover border border-blue-300"
+                    />
+                  ) : (
+                    <User className="h-4 w-4" />
+                  )}
+                  <div className="text-right">
+                    <div className="font-medium">{usuario.nomeUsuario}</div>
+                    <div className="text-xs text-blue-200">
+                      {usuario.cargo || 'Usuário'}
+                    </div>
                   </div>
-                </div>
+                </Link>
               </div>
               <button
                 onClick={handleLogout}
@@ -227,6 +232,16 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
               <span className="text-xs mt-1">Admin</span>
             </Link>
           )}
+          
+          <Link
+            to="/perfil"
+            className={`flex flex-col items-center py-2 px-3 ${
+              isActive('/perfil') ? 'text-lds-blue' : 'text-gray-500'
+            }`}
+          >
+            <User className="h-5 w-5" />
+            <span className="text-xs mt-1">Perfil</span>
+          </Link>
           
           <button
             onClick={handleLogout}
