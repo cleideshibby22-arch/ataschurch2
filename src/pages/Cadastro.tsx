@@ -137,6 +137,18 @@ const Cadastro: React.FC = () => {
       // Cadastrar através do AuthService
       const resultado = await AuthService.cadastrar(dadosUsuario, dadosUnidade);
 
+      // Verificar se precisa de confirmação de email
+      if (resultado.needsEmailConfirmation) {
+        setErros({ 
+          geral: resultado.message || 'Conta criada! Verifique seu email para confirmar antes de fazer login.' 
+        });
+        // Redirecionar para login após 3 segundos
+        setTimeout(() => {
+          navigate('/login');
+        }, 3000);
+        return;
+      }
+
       // Criar objeto do usuário logado
       const usuarioLogado = {
         id: resultado.usuario.id,
