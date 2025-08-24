@@ -74,6 +74,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         console.error('Erro ao buscar usuário:', usuarioError);
         // Se há sessão mas não há dados do usuário, fazer logout para limpar estado inconsistente
         await supabase.auth.signOut();
+        await supabase.auth.signOut();
         return;
       }
 
