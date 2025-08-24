@@ -140,7 +140,7 @@ const Cadastro: React.FC = () => {
       // Criar objeto do usuário logado
       const usuarioLogado = {
         id: resultado.usuario.id,
-        senha: '', // Senha gerenciada pelo Supabase Auth
+        senha: '',
         unidadeId: resultado.unidade.id,
         tipoUnidade: resultado.unidade.tipo,
         nomeUnidade: resultado.unidade.nome,

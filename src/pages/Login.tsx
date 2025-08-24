@@ -117,9 +117,10 @@ const Login: React.FC = () => {
     try {
       // Verificar se é o proprietário do sistema
       if (formData.email === 'admin@sistema.com' && formData.senha === 'admin1234') {
+        // Login especial para proprietário do sistema (não usa Supabase Auth)
         const proprietarioSistema: Usuario = {
           id: 'system-owner',
-          senha: 'admin1234',
+          senha: '',
           unidadeId: 'system',
           tipoUnidade: 'Sistema',
           nomeUnidade: 'Administração do Sistema',
@@ -147,7 +148,7 @@ const Login: React.FC = () => {
         return;
       }
       
-      // Fazer login através do AuthService
+      // Fazer login através do AuthService (Supabase Auth)
       const resultado = await AuthService.login(formData.email, formData.senha);
       
       if (resultado.unidades.length === 1) {
@@ -155,7 +156,7 @@ const Login: React.FC = () => {
         const unidade = resultado.unidades[0];
         const usuarioLogado: Usuario = {
           id: resultado.usuario.id,
-          senha: '', // Senha gerenciada pelo Supabase Auth
+          senha: '',
           unidadeId: unidade.unidade_id,
           tipoUnidade: unidade.unidades.tipo,
           nomeUnidade: unidade.unidades.nome,

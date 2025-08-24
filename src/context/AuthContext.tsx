@@ -40,18 +40,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         if (session?.user) {
           // Se há sessão, buscar dados do usuário
           await carregarUsuarioDoSupabase(session.user.id);
-        } else {
-          // Se não há sessão, verificar localStorage como fallback
-          const usuarioLocal = localStorage.getItem('usuario-logado');
-          if (usuarioLocal) {
-            try {
-              const usuarioData = JSON.parse(usuarioLocal);
-              setUsuario(usuarioData);
-            } catch (error) {
-              console.error('Erro ao carregar usuário do localStorage:', error);
-              localStorage.removeItem('usuario-logado');
-            }
-          }
         }
         
         // Escutar mudanças de autenticação
@@ -65,29 +53,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         });
       } catch (error) {
         console.error('Erro ao inicializar autenticação:', error);
-        // Fallback para localStorage
-        const usuarioLocal = localStorage.getItem('usuario-logado');
-        if (usuarioLocal) {
-          try {
-            const usuarioData = JSON.parse(usuarioLocal);
-            setUsuario(usuarioData);
-          } catch (error) {
-            console.error('Erro ao carregar usuário do localStorage:', error);
-            localStorage.removeItem('usuario-logado');
-          }
-        }
-      }
-    } else {
-      // Se Supabase não estiver disponível, usar apenas localStorage
-      const usuarioLocal = localStorage.getItem('usuario-logado');
-      if (usuarioLocal) {
-        try {
-          const usuarioData = JSON.parse(usuarioLocal);
-          setUsuario(usuarioData);
-        } catch (error) {
-          console.error('Erro ao carregar usuário do localStorage:', error);
-          localStorage.removeItem('usuario-logado');
-        }
       }
     }
     
@@ -158,6 +123,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
     } catch (error) {
       console.error('Erro ao carregar usuário do Supabase:', error);
+      // Em caso de erro, fazer logout para limpar estado inconsistente
+      await supabase?.auth.signOut();
+      setUsuario(null);
+      localStorage.removeItem('usuario-logado');
     }
   };
 
