@@ -306,15 +306,12 @@ export class AuthService {
         email: dadosUsuario.email,
         password: dadosUsuario.senha,
         options: {
-          emailRedirectTo: undefined, // Desabilitar confirmação por email
-          data: {
-            email_confirm: false
-          }
+          emailRedirectTo: `${window.location.origin}/login`
         }
       });
 
       if (authError) {
-        if (authError.message.includes('already registered')) {
+        if (authError.message.includes('already registered') || authError.message.includes('User already registered')) {
           // Usuário já existe no Auth, buscar na tabela usuarios
           const { data: usuarioExistente } = await supabase
             .from('usuarios')
@@ -326,6 +323,14 @@ export class AuthService {
             usuarioId = usuarioExistente.id;
           } else {
             throw new Error('Usuário existe no sistema de autenticação mas não na base de dados');
+          }
+        } else if (authError.message.includes('Error sending confirmation email')) {
+          // Se houver erro no envio de email, tentar obter o usuário criado
+          const { data: { user: currentUser } } = await supabase.auth.getUser();
+          if (currentUser) {
+            usuarioId = currentUser.id;
+          } else {
+            throw new Error('Erro no sistema de email. Tente novamente mais tarde.');
           }
         } else {
           throw new Error('Erro ao criar usuário');
