@@ -89,23 +89,58 @@ export class AuthService {
 
       const usuarioId = user.id;
 
-      // Criar usuário na tabela usuarios - ESSENCIAL: usar o UUID do Supabase Auth
-      const { data: usuario, error: usuarioError } = await supabase
+      // Criar ou buscar usuário na tabela usuarios - ESSENCIAL: usar o UUID do Supabase Auth
+      let usuario;
+      const { data: usuarioExistente, error: buscarError } = await supabase
         .from('usuarios')
-        .insert({
-          id: user.id,   // <- ESSENCIAL para a policy RLS
-          email: dadosUsuario.email,
-          senha: 'supabase_auth', // Campo obrigatório - indicar que usa Supabase Auth
-          nome_usuario: dadosUsuario.nomeUsuario,
-          telefone: dadosUsuario.telefone || null,
-          foto_usuario: dadosUsuario.fotoUsuario || null
-        })
-        .select()
-        .single();
+        .select('*')
+        .eq('id', user.id)
+        .maybeSingle();
 
-      if (usuarioError || !usuario) {
-        console.error('Erro detalhado ao criar usuário:', usuarioError);
-        throw new Error(`Erro ao criar perfil do usuário: ${usuarioError?.message || 'Erro desconhecido'}`);
+      if (buscarError && buscarError.code !== 'PGRST116') {
+        console.error('Erro ao buscar usuário existente:', buscarError);
+        throw new Error(`Erro ao verificar usuário existente: ${buscarError.message}`);
+      }
+
+      if (usuarioExistente) {
+        // Usuário já existe, usar o existente
+        usuario = usuarioExistente;
+      } else {
+        // Tentar criar novo usuário
+        const { data: novoUsuario, error: usuarioError } = await supabase
+          .from('usuarios')
+          .insert({
+            id: user.id,   // <- ESSENCIAL para a policy RLS
+            email: dadosUsuario.email,
+            senha: 'supabase_auth', // Campo obrigatório - indicar que usa Supabase Auth
+            nome_usuario: dadosUsuario.nomeUsuario,
+            telefone: dadosUsuario.telefone || null,
+            foto_usuario: dadosUsuario.fotoUsuario || null
+          })
+          .select()
+          .single();
+
+        if (usuarioError) {
+          // Se for erro de chave duplicada, buscar usuário existente
+          if (usuarioError.code === '23505') {
+            const { data: usuarioDuplicado, error: buscarDuplicadoError } = await supabase
+              .from('usuarios')
+              .select('*')
+              .eq('email', dadosUsuario.email)
+              .single();
+
+            if (buscarDuplicadoError || !usuarioDuplicado) {
+              console.error('Erro ao buscar usuário duplicado:', buscarDuplicadoError);
+              throw new Error('Usuário já existe mas não foi possível recuperar os dados');
+            }
+            usuario = usuarioDuplicado;
+          } else {
+            console.error('Erro detalhado ao criar usuário:', usuarioError);
+            throw new Error(`Erro ao criar perfil do usuário: ${usuarioError.message || 'Erro desconhecido'}`);
+          }
+        } else {
+          usuario = novoUsuario;
+        }
       }
 
       // Criar unidade
