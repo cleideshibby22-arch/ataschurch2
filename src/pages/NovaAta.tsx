@@ -150,6 +150,11 @@ const NovaAta: React.FC = () => {
     if (!validarFormulario()) {
       return;
     }
+    
+    if (!usuario?.unidadeId) {
+      alert('Erro: Usuário não está associado a uma unidade válida');
+      return;
+    }
 
     // Ensure date is not empty before submitting
     const dataParaSubmissao = {

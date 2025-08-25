@@ -29,14 +29,13 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
 
   // Se não estiver logado, redirecionar para login
   React.useEffect(() => {
-    // Aguardar um pouco para verificar se o usuário será carregado do Supabase
-    const timer = setTimeout(() => {
-      if (!usuario) {
+    if (!usuario) {
+      // Verificar se há dados no localStorage antes de redirecionar
+      const usuarioLocal = localStorage.getItem('usuario-logado');
+      if (!usuarioLocal) {
         navigate('/login');
       }
-    }, 1000);
-    
-    return () => clearTimeout(timer);
+    }
   }, [usuario, navigate]);
 
   if (!usuario) {

@@ -71,28 +71,31 @@ export class AuthService {
         email: dadosUsuario.email,
         password: dadosUsuario.senha,
         options: {
-          disableEmailConfirmation: true,
-          emailRedirectTo: `${window.location.origin}/login`
+          data: {
+            nome_usuario: dadosUsuario.nomeUsuario
+          }
         }
       });
 
       if (authError) {
-        if (authError.message.includes('already registered') || authError.message.includes('User already registered')) {
+        if (authError.message.includes('already registered') || 
+            authError.message.includes('User already registered') ||
+            authError.message.includes('Email rate limit exceeded')) {
           throw new Error('Email já cadastrado');
         }
-        throw new Error('Erro ao criar conta: ' + authError.message);
+        if (authError.message.includes('Error sending confirmation email')) {
+          // Continuar mesmo com erro de email
+          console.warn('Erro no envio de email, mas continuando cadastro');
+        } else {
+          throw new Error('Erro ao criar conta: ' + authError.message);
+        }
       }
 
-      // Verificar se o usuário foi criado mas precisa de confirmação de email
-      if (!authData.user) {
-        // Retornar flag indicando que precisa de confirmação de email
-        return {
-          needsEmailConfirmation: true,
-          message: 'Conta criada com sucesso! Verifique seu email para confirmar a conta antes de fazer login.'
-        };
+      const user = authData?.user;
+      if (!user) {
+        throw new Error('Erro ao criar usuário no sistema de autenticação');
       }
-
-      const user = authData.user;
+      
       const usuarioId = user.id;
 
       // Criar ou buscar usuário na tabela usuarios - ESSENCIAL: usar o UUID do Supabase Auth
@@ -295,9 +298,6 @@ export class AuthService {
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email: dadosUsuario.email,
         password: dadosUsuario.senha,
-        options: {
-          emailRedirectTo: `${window.location.origin}/login`
-        }
       });
 
       if (authError) {
@@ -314,14 +314,6 @@ export class AuthService {
           } else {
             throw new Error('Usuário existe no sistema de autenticação mas não na base de dados');
           }
-        } else if (authError.message.includes('Error sending confirmation email')) {
-          // Se houver erro no envio de email, tentar obter o usuário criado
-          const { data: { user: currentUser } } = await supabase.auth.getUser();
-          if (currentUser) {
-            usuarioId = currentUser.id;
-          } else {
-            throw new Error('Erro no sistema de email. Tente novamente mais tarde.');
-          }
         } else {
           throw new Error('Erro ao criar usuário');
         }
@@ -335,6 +327,7 @@ export class AuthService {
             id: usuarioId,
             email: dadosUsuario.email,
             senha: 'supabase_auth', // Campo obrigatório - indicar que usa Supabase Auth
+            nome_usuario: dadosUsuario.nomeUsuario,
             telefone: dadosUsuario.telefone || null,
             foto_usuario: dadosUsuario.fotoUsuario || null
           });

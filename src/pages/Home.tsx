@@ -18,10 +18,14 @@ const Home: React.FC = () => {
   }, {} as Record<string, number>);
 
   const atasEsteMes = atas.filter(ata => {
-    const dataAta = new Date(ata.data);
-    const hoje = new Date();
-    const inicioMes = new Date(hoje.getFullYear(), hoje.getMonth(), 1);
-    return dataAta >= inicioMes;
+    try {
+      const dataAta = new Date(ata.data);
+      const hoje = new Date();
+      const inicioMes = new Date(hoje.getFullYear(), hoje.getMonth(), 1);
+      return dataAta >= inicioMes && !isNaN(dataAta.getTime());
+    } catch (error) {
+      return false;
+    }
   }).length;
 
   return (

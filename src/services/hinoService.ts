@@ -4,6 +4,10 @@ import { Hino } from '../data/hinos';
 export class HinoService {
   // Buscar hinos personalizados da unidade
   static async buscarHinosPersonalizados(unidadeId: string): Promise<Hino[]> {
+    if (!unidadeId || unidadeId === 'system') {
+      return [];
+    }
+    
     // Se Supabase não estiver disponível, usar sistema local
     if (!isSupabaseAvailable || !supabase) {
       return this.buscarHinosPersonalizadosLocal(unidadeId);

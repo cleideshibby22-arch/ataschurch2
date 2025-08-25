@@ -32,6 +32,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const inicializarAuth = async () => {
     setCarregando(true);
     
+    // Primeiro verificar se há usuário salvo localmente
+    const usuarioLocal = localStorage.getItem('usuario-logado');
+    if (usuarioLocal) {
+      try {
+        const usuario = JSON.parse(usuarioLocal);
+        setUsuario(usuario);
+        setCarregando(false);
+        return;
+      } catch (error) {
+        console.error('Erro ao carregar usuário local:', error);
+        localStorage.removeItem('usuario-logado');
+      }
+    }
+    
     if (isSupabaseAvailable && supabase) {
       try {
         // Verificar se há sessão ativa no Supabase

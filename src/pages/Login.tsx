@@ -151,7 +151,7 @@ const Login: React.FC = () => {
       // Fazer login através do AuthService (Supabase Auth)
       const resultado = await AuthService.login(formData.email, formData.senha);
       
-      if (resultado.unidades.length === 1) {
+      if (resultado.unidades && resultado.unidades.length === 1) {
         // Se só tem uma unidade, fazer login direto
         const unidade = resultado.unidades[0];
         const usuarioLogado: Usuario = {
@@ -174,7 +174,7 @@ const Login: React.FC = () => {
         setUsuarioLogado(usuarioLogado);
         localStorage.setItem('ultima-unidade-usada', unidade.unidade_id);
         navigate('/');
-      } else {
+      } else if (resultado.unidades && resultado.unidades.length > 1) {
         // Se tem múltiplas unidades, mostrar seleção
         const unidadesFormatadas = resultado.unidades.map((uu: any) => ({
           ...(uu.unidades || {}),
@@ -190,6 +190,8 @@ const Login: React.FC = () => {
         
         setUnidadesDisponiveis(unidadesFormatadas);
         setMostrarSelecaoUnidade(true);
+      } else {
+        throw new Error('Usuário não tem acesso a nenhuma unidade');
       }
       
     } catch (error) {

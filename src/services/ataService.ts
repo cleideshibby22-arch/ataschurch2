@@ -20,7 +20,11 @@ export class AtaService {
    */
   static async buscarAtas(unidadeId: string): Promise<Ata[]> {
     // Verificar se Supabase está disponível e se o unidadeId é válido
-    if (!isSupabaseAvailable() || !supabase || !this.isValidUUID(unidadeId)) {
+    if (!isSupabaseAvailable() || !supabase) {
+      return [];
+    }
+    
+    if (!unidadeId || !this.isValidUUID(unidadeId)) {
       return [];
     }
 

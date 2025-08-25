@@ -4,8 +4,22 @@ import { supabase, isSupabaseAvailable } from '../lib/supabase';
 
 export const getUsuarioLogado = (): Usuario | null => {
   try {
-    const userData = loadFromMultipleSources('usuario-logado');
-    return userData ? userData as Usuario : null;
+    // Primeiro tentar localStorage
+    const localData = localStorage.getItem('usuario-logado');
+    if (localData) {
+      return JSON.parse(localData) as Usuario;
+    }
+    
+    // Fallback para sessionStorage
+    const sessionData = sessionStorage.getItem('usuario-logado');
+    if (sessionData) {
+      const userData = JSON.parse(sessionData) as Usuario;
+      // Salvar no localStorage para próximas sessões
+      localStorage.setItem('usuario-logado', sessionData);
+      return userData;
+    }
+    
+    return null;
   } catch (error) {
     console.error('Erro ao obter usuário logado:', error);
     return null;

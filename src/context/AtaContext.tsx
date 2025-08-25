@@ -41,7 +41,7 @@ export const AtaProvider = function({ children }: { children: React.ReactNode })
     try {
       setCarregando(true);
       
-      if (!usuario?.unidadeId) {
+      if (!usuario?.unidadeId || usuario.unidadeId === 'system') {
         setAtas([]);
         return;
       }

@@ -65,7 +65,10 @@ const Usuarios: React.FC = () => {
 
   const carregarUsuarios = async () => {
     try {
-      if (!usuario?.unidadeId) return;
+      if (!usuario?.unidadeId || usuario.unidadeId === 'system') {
+        setUsuariosUnidade([]);
+        return;
+      }
       
       const usuarios = await AuthService.buscarUsuariosDaUnidade(usuario.unidadeId);
       setUsuariosUnidade(usuarios);

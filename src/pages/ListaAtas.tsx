@@ -153,9 +153,9 @@ const ListaAtas: React.FC = () => {
                   </div>
                   <p className="text-gray-600 mb-2">{ata.estaca}</p>
                   <div className="text-sm text-gray-500">
-                    {getAtaDescription(ata)}
+                    {ata ? getAtaDescription(ata) : 'Dados não disponíveis'}
                   </div>
-                  {getAtaContent(ata) && (
+                  {ata && getAtaContent(ata) && (
                     <div className="mt-2 text-sm text-gray-500">
                       {getAtaContent(ata)}
                     </div>

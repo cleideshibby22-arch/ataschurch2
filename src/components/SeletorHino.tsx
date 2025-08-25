@@ -88,13 +88,13 @@ const SeletorHino: React.FC<SeletorHinoProps> = ({
   };
 
   const salvarNovoHino = () => {
-    if (!novoHino.numero || !novoHino.titulo) {
+    if (!novoHino.numero.trim() || !novoHino.titulo.trim()) {
       alert('Por favor, preencha o número e o título do hino.');
       return;
     }
 
     const numero = parseInt(novoHino.numero);
-    if (isNaN(numero)) {
+    if (isNaN(numero) || numero <= 0) {
       alert('O número do hino deve ser um número válido.');
       return;
     }
@@ -105,15 +105,19 @@ const SeletorHino: React.FC<SeletorHinoProps> = ({
       return;
     }
 
-    adicionarHino({
-      numero,
-      titulo: novoHino.titulo,
-      categoria: novoHino.categoria
-    });
+    try {
+      adicionarHino({
+        numero,
+        titulo: novoHino.titulo.trim(),
+        categoria: novoHino.categoria
+      });
 
-    fecharFormulario();
-    // Atualizar a lista
-    window.location.reload();
+      fecharFormulario();
+      // Atualizar a lista
+      window.location.reload();
+    } catch (error) {
+      alert(error instanceof Error ? error.message : 'Erro ao salvar hino');
+    }
   };
 
   const excluirHino = (hino: Hino) => {

@@ -335,16 +335,30 @@ export const buscarHinos = (termo: string): Hino[] => {
 };
 
 export const adicionarHino = (hino: Omit<Hino, 'fonte'>): void => {
+  // Validar dados do hino
+  if (!hino.numero || !hino.titulo || !hino.categoria) {
+    throw new Error('Dados do hino são obrigatórios');
+  }
+  
+  // Verificar se já existe
+  if (HINOS.find(h => h.numero === hino.numero)) {
+    throw new Error('Já existe um hino com este número');
+  }
+  
   const novoHino: Hino = {
     ...hino,
     fonte: 'personalizado'
   };
   HINOS.push(novoHino);
   
-  // Salvar no localStorage
-  const hinosPersonalizados = JSON.parse(localStorage.getItem('hinos-personalizados') || '[]');
-  hinosPersonalizados.push(novoHino);
-  localStorage.setItem('hinos-personalizados', JSON.stringify(hinosPersonalizados));
+  try {
+    // Salvar no localStorage
+    const hinosPersonalizados = JSON.parse(localStorage.getItem('hinos-personalizados') || '[]');
+    hinosPersonalizados.push(novoHino);
+    localStorage.setItem('hinos-personalizados', JSON.stringify(hinosPersonalizados));
+  } catch (error) {
+    console.error('Erro ao salvar hino personalizado:', error);
+  }
 };
 
 export const removerHino = (numero: number): void => {
