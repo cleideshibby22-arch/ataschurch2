@@ -80,8 +80,14 @@ export class AuthService {
       if (authError) {
         if (authError.message.includes('already registered') || 
             authError.message.includes('User already registered') ||
-            authError.message.includes('Email rate limit exceeded')) {
-          throw new Error('Email já cadastrado');
+            authError.message.includes('Email rate limit exceeded') ||
+            authError.message.includes('email rate limit exceeded') ||
+            authError.message.includes('over_email_send_rate_limit')) {
+          if (authError.message.includes('rate limit')) {
+            throw new Error('Limite de emails excedido. Tente novamente em alguns minutos ou contate o administrador.');
+          } else {
+            throw new Error('Email já cadastrado');
+          }
         }
         if (authError.message.includes('Error sending confirmation email')) {
           // Continuar mesmo com erro de email

@@ -170,7 +170,15 @@ const Cadastro: React.FC = () => {
       console.error('Erro ao cadastrar:', error);
       const errorMessage = error instanceof Error ? error.message : 'Erro ao realizar cadastro. Tente novamente.';
       console.error('Erro detalhado no cadastro:', errorMessage);
-      setErros({ geral: errorMessage });
+      
+      // Tratar erro de rate limit especificamente
+      if (errorMessage.includes('rate limit') || errorMessage.includes('Email rate limit exceeded')) {
+        setErros({ 
+          geral: 'Limite de tentativas de cadastro excedido. Aguarde alguns minutos antes de tentar novamente. Se o problema persistir, contate o administrador do sistema.' 
+        });
+      } else {
+        setErros({ geral: errorMessage });
+      }
     } finally {
       setCarregando(false);
     }
