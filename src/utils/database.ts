@@ -52,15 +52,22 @@ export class DatabaseManager {
 
   public saveData(key: string, data: any) {
     try {
+      if (!key || data === undefined) {
+        throw new Error('Chave e dados são obrigatórios');
+      }
       localStorage.setItem(key, JSON.stringify(data));
       this.syncData();
     } catch (error) {
       console.error('Erro ao salvar dados:', error);
+      throw error;
     }
   }
 
   public getData(key: string) {
     try {
+      if (!key) {
+        return null;
+      }
       const data = localStorage.getItem(key);
       return data ? JSON.parse(data) : null;
     } catch (error) {

@@ -140,7 +140,7 @@ const Perfil: React.FC = () => {
   const handleSubmitSenha = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!validarFormularioSenha() || !usuario) {
+    if (!validarFormularioSenha() || !usuario || !usuario.email) {
       return;
     }
 
