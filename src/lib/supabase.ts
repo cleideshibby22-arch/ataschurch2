@@ -1,20 +1,15 @@
-import { createClient } from '@supabase/supabase-js';
+import { createClient } from "@supabase/supabase-js";
 
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL as string;
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY as string;
 
-export const supabase = createClient(supabaseUrl, supabaseKey);
-export const isSupabaseAvailable = !!supabaseUrl && !!supabaseKey;
+const isSupabaseConfigured = !!supabaseUrl && !!supabaseAnonKey;
 
-// Verificar se as variáveis de ambiente estão configuradas
-const isSupabaseConfigured = supabaseUrl && supabaseAnonKey;
-
-// Criar cliente Supabase apenas se as variáveis estiverem configuradas
-export const supabase = isSupabaseConfigured 
+// Exporta apenas UMA VEZ
+export const supabase = isSupabaseConfigured
   ? createClient(supabaseUrl, supabaseAnonKey)
   : null;
 
-// Flag para verificar se o Supabase está disponível
 export const isSupabaseAvailable = isSupabaseConfigured;
 
 // Tipos do banco de dados
