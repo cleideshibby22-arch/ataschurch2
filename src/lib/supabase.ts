@@ -3,14 +3,16 @@ import { createClient } from "@supabase/supabase-js";
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL as string;
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY as string;
 
-const isSupabaseConfigured = !!supabaseUrl && !!supabaseAnonKey;
+if (!supabaseUrl || !supabaseAnonKey) {
+  console.error("❌ Supabase não configurado.");
+  console.error("Verifique se as variáveis estão definidas no Netlify:");
+  console.error("- VITE_SUPABASE_URL");
+  console.error("- VITE_SUPABASE_ANON_KEY");
+}
 
-// Exporta apenas UMA VEZ
-export const supabase = isSupabaseConfigured
+export const supabase = supabaseUrl && supabaseAnonKey
   ? createClient(supabaseUrl, supabaseAnonKey)
   : null;
-
-export const isSupabaseAvailable = isSupabaseConfigured;
 
 // Tipos do banco de dados
 export interface Database {
