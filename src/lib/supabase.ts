@@ -1,18 +1,24 @@
 import { createClient } from "@supabase/supabase-js";
 
+// Pegar variáveis de ambiente
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL as string;
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY as string;
 
+// Validar se estão definidas
 if (!supabaseUrl || !supabaseAnonKey) {
-  console.error("❌ Supabase não configurado.");
-  console.error("Verifique se as variáveis estão definidas no Netlify:");
+  console.error("❌ Supabase não configurado!");
+  console.error("Verifique se as variáveis de ambiente estão definidas no Netlify:");
   console.error("- VITE_SUPABASE_URL");
   console.error("- VITE_SUPABASE_ANON_KEY");
 }
 
+// Criar client apenas se variáveis existirem
 export const supabase = supabaseUrl && supabaseAnonKey
   ? createClient(supabaseUrl, supabaseAnonKey)
   : null;
+
+// Flag de disponibilidade para facilitar uso em contextos ou services
+export const isSupabaseAvailable = !!supabase;
 
 // Tipos do banco de dados
 export interface Database {
