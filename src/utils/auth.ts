@@ -1,5 +1,5 @@
 import { Usuario, Unidade, UsuarioUnidade } from '../types';
-import { AuthService } from '../services/authService';
+import AuthService from '../services/authService';
 import { supabase, isSupabaseAvailable } from '../lib/supabase';
 
 export const getUsuarioLogado = (): Usuario | null => {
