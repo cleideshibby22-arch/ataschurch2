@@ -10,11 +10,10 @@ class AuthService {
       });
 
       if (error) throw error;
-
-      return { user: data.user, session: data.session };
-    } catch (error: any) {
-      console.error('Erro ao cadastrar usuário:', error.message);
-      throw new Error(error.message || 'Erro ao cadastrar usuário.');
+      return data;
+    } catch (err) {
+      console.error('Erro ao cadastrar:', err);
+      throw err;
     }
   }
 
@@ -27,11 +26,10 @@ class AuthService {
       });
 
       if (error) throw error;
-
-      return { user: data.user, session: data.session };
-    } catch (error: any) {
-      console.error('Erro ao autenticar usuário:', error.message);
-      throw new Error(error.message || 'Erro ao autenticar usuário.');
+      return data;
+    } catch (err) {
+      console.error('Erro ao logar:', err);
+      throw err;
     }
   }
 
@@ -40,23 +38,25 @@ class AuthService {
     try {
       const { error } = await supabase.auth.signOut();
       if (error) throw error;
-    } catch (error: any) {
-      console.error('Erro ao sair:', error.message);
-      throw new Error(error.message || 'Erro ao sair da conta.');
+      return true;
+    } catch (err) {
+      console.error('Erro ao sair:', err);
+      throw err;
     }
   }
 
-  // Obter usuário atual
+  // Pegar usuário logado
   static async getUser() {
     try {
       const { data, error } = await supabase.auth.getUser();
       if (error) throw error;
       return data.user;
-    } catch (error: any) {
-      console.error('Erro ao buscar usuário:', error.message);
-      return null;
+    } catch (err) {
+      console.error('Erro ao buscar usuário:', err);
+      throw err;
     }
   }
 }
 
+// Exporta como default
 export default AuthService;
