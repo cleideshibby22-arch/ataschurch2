@@ -1,14 +1,16 @@
-import { createClient } from '@supabase/supabase-js';
+import { createClient } from '@supabase/supabase-js'
 
-const supabase = createClient(
-  import.meta.env.VITE_SUPABASE_URL!,
-  import.meta.env.VITE_SUPABASE_ANON_KEY!
-);
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL as string
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY as string
 
-console.log("URL:", import.meta.env.VITE_SUPABASE_URL);
-console.log("KEY:", import.meta.env.VITE_SUPABASE_ANON_KEY ? "OK" : "MISSING");
+// Verificação simples (opcional, ajuda no debug)
+if (!supabaseUrl || !supabaseAnonKey) {
+  console.error("❌ Variáveis do Supabase não configuradas. Verifique VITE_SUPABASE_URL e VITE_SUPABASE_ANON_KEY")
+}
 
-export default supabase;
+// Cria o cliente
+export const supabase = createClient(supabaseUrl, supabaseAnonKey)
+
 
 // Tipos do banco de dados
 export interface Database {
