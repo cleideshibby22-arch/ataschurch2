@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Users, UserPlus, Edit, Trash2, Mail, Phone, User, Building, Shield, Settings } from 'lucide-react';
-import { AuthService } from '../services/authService';
+import  AuthService  from '../services/authService';
 import { CHAMADOS_DISPONIVEIS, Chamado } from '../types';
 import { useAuth } from '../context/AuthContext';
 
