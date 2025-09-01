@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { LogIn, Eye, EyeOff, Mail, Lock } from 'lucide-react';
 import { Usuario, Unidade } from '../types';
 import { useAuth } from '../context/AuthContext';
-import { AuthService } from '../services/authService';
+import  AuthService  from '../services/authService';
 
 interface UnidadeComDetalhesUsuario extends Unidade {
   usuario_id: string;
