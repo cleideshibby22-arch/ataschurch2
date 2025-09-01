@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { UserPlus, Eye, EyeOff, Mail, User, Building, Lock, Upload, Image } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
-import { AuthService } from '../services/authService';
+import  AuthService from '../services/authService';
 
 const Cadastro: React.FC = () => {
   const navigate = useNavigate();
