@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, User, Mail, Phone, Camera, Lock, Save, Eye, EyeOff } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
-import { AuthService } from '../services/authService';
+import  AuthService  from '../services/authService';
 
 const Perfil: React.FC = () => {
   const navigate = useNavigate();
