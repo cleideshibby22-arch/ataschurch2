@@ -3,7 +3,7 @@
   publish = "dist"
 
 [build.environment]
-  NODE_VERSION = "18" # ou a versão que você usa no projeto
+  NODE_VERSION = "18"
   SECRETS_SCAN_ENABLED = "false"
 
 [[redirects]]
