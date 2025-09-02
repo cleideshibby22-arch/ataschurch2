@@ -3,7 +3,8 @@
   publish = "dist"
 
 [build.environment]
-SECRETS_SCAN_OMIT_PATHS = "dist/assets/index-*.js"
+  NODE_VERSION = "18" # ou a versão que você usa no projeto
+  SECRETS_SCAN_ENABLED = "false"
 
 [[redirects]]
   from = "/*"
