@@ -4,9 +4,10 @@ import AuthService from '../services/authService';
 interface Usuario {
   id: string;
   email: string;
-  nome_usuario: string;
+  nomeUsuario: string;
   telefone?: string | null;
-  foto_usuario?: string | null;
+  fotoUsuario?: string | null;
+  cargo?: string | null;
 }
 
 interface AuthContextProps {
@@ -23,11 +24,23 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [usuario, setUsuario] = useState<Usuario | null>(null);
   const [carregando, setCarregando] = useState(true);
 
+  // Converter dados do backend (snake_case -> camelCase)
+  const normalizarUsuario = (dados: any): Usuario => ({
+    id: dados.id,
+    email: dados.email,
+    nomeUsuario: dados.nome_usuario,
+    telefone: dados.telefone ?? null,
+    fotoUsuario: dados.foto_usuario ?? null,
+    cargo: dados.cargo ?? null,
+  });
+
   useEffect(() => {
     const init = async () => {
       try {
         const usuarioAtual = await AuthService.obterUsuarioAtual();
-        setUsuario(usuarioAtual);
+        if (usuarioAtual) {
+          setUsuario(normalizarUsuario(usuarioAtual));
+        }
       } catch (err) {
         console.error(err);
       } finally {
@@ -42,7 +55,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     try {
       await AuthService.login(email, senha);
       const usuarioAtual = await AuthService.obterUsuarioAtual();
-      setUsuario(usuarioAtual);
+      if (usuarioAtual) {
+        setUsuario(normalizarUsuario(usuarioAtual));
+      }
     } finally {
       setCarregando(false);
     }
@@ -62,7 +77,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setCarregando(true);
     try {
       const { usuario: novoUsuario } = await AuthService.cadastrar(dadosUsuario, dadosUnidade);
-      setUsuario(novoUsuario);
+      if (novoUsuario) {
+        setUsuario(normalizarUsuario(novoUsuario));
+      }
     } finally {
       setCarregando(false);
     }
